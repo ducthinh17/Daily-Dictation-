@@ -120,10 +120,15 @@ export const db = new DictinationDB();
 
 // Global error handler
 db.on('versionchange', () => {
+  console.log('Database version change detected, closing connection...');
   db.close();
   window.location.reload();
 });
 
+db.on('blocked', () => {
+  console.log('Database connection blocked. Please close other tabs of this app.');
+});
+
 db.open().catch(err => {
-  console.error("Failed to open db:", err.stack || err);
+  console.error("CRITICAL: Failed to open db:", err);
 });
