@@ -1,0 +1,76 @@
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.tabs-list {
+  display: flex;
+  gap: var(--space-xs);
+  padding: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  margin-bottom: var(--space-lg, 1.5rem);
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+.tabs-list::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.tabs-trigger {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs, 0.375rem);
+  padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary, #94a3b8);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  white-space: nowrap;
+}
+
+.tabs-trigger:hover {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+}
+
+.tabs-trigger.active {
+  color: white;
+  background: var(--accent-gradient, linear-gradient(135deg, #7c3aed, #06b6d4));
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+}
+
+.tabs-trigger-icon {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.8;
+}
+
+.tabs-trigger.active .tabs-trigger-icon {
+  opacity: 1;
+}
+
+.tabs-content {
+  animation: tabFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

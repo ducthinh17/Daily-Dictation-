@@ -1,0 +1,98 @@
+.lesson-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.lesson-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  border-color: var(--border-subtle);
+}
+
+.card-content {
+  padding: var(--space-md) var(--space-lg);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.lesson-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.lesson-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.dot-separator {
+  opacity: 0.5;
+}
+
+.card-progress {
+  margin-top: var(--space-sm);
+}
+
+.card-actions {
+  display: flex;
+  gap: 1px;
+  background-color: var(--border-subtle);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.action-btn {
+  background-color: var(--bg-secondary);
+  border: none;
+  padding: var(--space-md);
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.action-btn:hover {
+  background-color: var(--bg-card);
+}
+
+.action-btn.primary {
+  color: var(--accent-secondary);
+}
+
+.action-btn.primary:hover {
+  background-color: rgba(6, 182, 212, 0.1);
+}
+
+.action-btn.danger {
+  color: var(--text-muted);
+}
+
+.action-btn.danger:hover {
+  color: var(--color-error);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.action-btn.icon-only {
+  flex-grow: 0;
+  flex-basis: 60px;
+}

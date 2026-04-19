@@ -1,0 +1,103 @@
+.transcribe-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.transcribe-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.transcribe-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.transcribe-btn:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.transcribe-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.transcribe-btn.done {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.transcribe-btn.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--text-primary);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.transcribe-progress {
+  width: 100%;
+  height: 3px;
+  background: rgba(139, 92, 246, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-animated {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 2px;
+  animation: progressSlide 1.5s ease-in-out infinite;
+}
+
+@keyframes progressSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+.transcribe-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+  color: #ef4444;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease;
+}
+
+.transcribe-error svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}

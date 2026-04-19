@@ -1,0 +1,196 @@
+.practice-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  gap: var(--space-xl);
+  transition: --accent 0.3s ease;
+}
+
+/* ── Review mode: shift accent to green ── */
+.practice-page.viewing-completed .practice-header {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.1);
+}
+
+.practice-page.viewing-completed .segment-indicator {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+.practice-page.viewing-completed .practice-progress-bar {
+  filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.25));
+}
+
+.practice-page.loading {
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.practice-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+}
+
+.practice-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.segment-indicator {
+  font-weight: 700;
+  color: white;
+  background: var(--accent-gradient);
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.segment-indicator.reviewing {
+  background: linear-gradient(135deg, #16a34a, #059669);
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.35);
+}
+
+.practice-center-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.practice-mode-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.segment-time {
+  color: var(--text-primary);
+  opacity: 0.9;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.settings-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--space-xs);
+  transition: color var(--transition-fast);
+}
+
+.settings-btn:hover {
+  color: var(--text-primary);
+}
+
+.practice-status-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: var(--space-md) var(--space-sm) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.progress-percentage {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--accent-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.practice-progress-bar {
+  filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.2));
+}
+
+.practice-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  flex-grow: 1;
+  padding-top: var(--space-lg);
+}
+
+.audio-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-md);
+}
+
+.typing-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.practice-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.answer-reveal {
+  margin-top: var(--space-md);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  background: rgba(6, 182, 212, 0.05);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.answer-reveal h4 {
+  margin: 0;
+  color: var(--accent-secondary);
+}
+
+.answer-reveal p {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}

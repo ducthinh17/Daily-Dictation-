@@ -1,0 +1,217 @@
+.container {
+  padding: var(--space-xl);
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: 100px; /* Bottom nav space */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+}
+
+.statsOverview {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.statBox {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  min-width: 120px;
+}
+
+.statNum {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Empty State */
+.emptyCard {
+  margin-top: var(--space-lg);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.emptyIcon {
+  color: #34d399; /* Success color */
+  margin-bottom: var(--space-md);
+  opacity: 0.8;
+}
+
+.emptyState h3 {
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+  font-size: 1.25rem;
+}
+
+/* Word Grid */
+.wordGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.wordCard {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wordCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium);
+  border-color: var(--border-glass-hover);
+}
+
+.wordCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.wordHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.theWord {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.mistakeHistory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.mistakeLabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.typedTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.typedTag {
+  font-size: 0.8rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.wordActions {
+  margin-top: auto;
+  padding-top: var(--space-sm);
+}
+
+/* Active Review Mode */
+.reviewActiveCard {
+  max-width: 600px;
+  margin: 2rem auto;
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.reviewActiveBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+  padding: 3rem 2rem;
+}
+
+.reviewInstructions {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.targetWordReveal {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+.reviewInputWrapper {
+  display: flex;
+  gap: var(--space-sm);
+  width: 100%;
+  max-width: 400px;
+}
+
+.reviewInput {
+  flex: 1;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0 1rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  height: 48px;
+}
+
+.reviewInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.3);
+}
+
+.markMasteredBtn {
+  color: #34d399 !important;
+}
+
+.markMasteredBtn:hover {
+  background: rgba(16, 185, 129, 0.1) !important;
+}

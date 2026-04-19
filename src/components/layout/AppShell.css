@@ -1,0 +1,119 @@
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated Mesh Background */
+.app-bg-mesh {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.mesh-blob {
+  position: absolute;
+  filter: blur(80px);
+  border-radius: 50%;
+  opacity: 0.12;
+  animation: breathing-blob 20s ease-in-out infinite alternate;
+}
+
+[data-theme='light'] .mesh-blob {
+  opacity: 0.25;
+}
+
+.mesh-blob-1 {
+  top: -20%;
+  left: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, var(--accent-primary) 0%, transparent 70%);
+  animation-duration: 25s;
+  animation-delay: 0s;
+}
+
+.mesh-blob-2 {
+  bottom: -20%;
+  right: -10%;
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(circle, var(--accent-secondary) 0%, transparent 70%);
+  animation-duration: 22s;
+  animation-delay: -5s;
+  animation-direction: alternate-reverse;
+}
+
+.mesh-blob-3 {
+  top: 30%;
+  left: 40%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+  animation-duration: 28s;
+  animation-delay: -10s;
+}
+
+@keyframes breathing-blob {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(5%, 8%) scale(1.1);
+  }
+  66% {
+    transform: translate(-3%, 4%) scale(0.95);
+  }
+  100% {
+    transform: translate(2%, -5%) scale(1.05);
+  }
+}
+
+.app-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.app-content-inner {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md);
+  /* Leave space for bottom bar on mobile */
+  padding-bottom: calc(var(--space-xl) + 64px + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 769px) {
+  .app-content-inner {
+    padding-bottom: var(--space-xl); /* Reset on desktop */
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    display: none; /* Hide sidebar on mobile */
+  }
+  
+  .app-main-content {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: visible; /* Let body handle scroll on mobile if needed, or keep it */
+  }
+}
