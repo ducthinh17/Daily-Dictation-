@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Trophy, Star, Target, Flame, Zap, Award, CheckCircle } from 'lucide-react';
 import { db } from '../db';
@@ -49,34 +49,55 @@ export function AchievementsPage() {
     }
   }, [profile]);
 
+  const [isTakingTooLong, setIsTakingTooLong] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (profile === undefined) setIsTakingTooLong(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [profile]);
+
   if (profile === undefined || unlockedBadges === undefined || sessions === undefined) {
     return (
       <div className={styles.loading}>
         <div className={styles.spinner}></div>
         <p>Loading achievements...</p>
-        {import.meta.env.DEV && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', fontSize: '0.8rem', opacity: 0.7 }}>
+        
+        {(import.meta.env.DEV || isTakingTooLong) && (
+          <div className={styles.debugInfo}>
             <span>Status: Profile: {profile === undefined ? '⏳' : '✅'} | Badges: {unlockedBadges === undefined ? '⏳' : '✅'} | Sessions: {sessions === undefined ? '⏳' : '✅'}</span>
           </div>
         )}
-        <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem' }}>
-          <button onClick={() => window.location.reload()} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', cursor: 'pointer' }}>
+
+        <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button 
+            onClick={() => window.location.reload()} 
+            className={styles.reloadBtn}
+          >
             Reload Page
           </button>
-          {import.meta.env.DEV && (
+          
+          {(import.meta.env.DEV || isTakingTooLong) && (
             <button 
               onClick={async () => {
-                if(confirm("Dữ liệu của bạn sẽ bị xóa sạch để sửa lỗi hệ thống. Bạn có chắc chắn không?")) {
+                if(confirm("Hệ thống sẽ xóa dữ liệu cục bộ để sửa lỗi khởi tạo. Bạn có chắc chắn muốn thực hiện không?")) {
                   await db.delete();
                   window.location.reload();
                 }
               }} 
-              style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ff4d4d', color: '#ff4d4d', background: 'transparent', cursor: 'pointer' }}
+              className={styles.resetBtn}
             >
-              Nuke Database (Nuclear Fix)
+              {isTakingTooLong ? "Reset & Fix" : "Nuke Database (Nuclear Fix)"}
             </button>
           )}
         </div>
+        
+        {isTakingTooLong && (
+          <p className={styles.hint}>
+            Khởi tạo lần đầu có thể mất một chút thời gian. Nếu vẫn bị kẹt, hãy thử nút "Reset & Fix".
+          </p>
+        )}
       </div>
     );
   }
