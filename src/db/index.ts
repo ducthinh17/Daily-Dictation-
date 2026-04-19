@@ -115,4 +115,15 @@ export class DictinationDB extends Dexie {
   }
 }
 
+
 export const db = new DictinationDB();
+
+// Global error handler
+db.on('versionchange', () => {
+  db.close();
+  window.location.reload();
+});
+
+db.open().catch(err => {
+  console.error("Failed to open db:", err.stack || err);
+});

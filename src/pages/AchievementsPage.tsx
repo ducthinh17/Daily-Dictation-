@@ -1,4 +1,4 @@
-
+import { useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Trophy, Star, Target, Flame, Zap, Award, CheckCircle } from 'lucide-react';
 import { db } from '../db';
@@ -24,23 +24,34 @@ export function AchievementsPage() {
   const sessions = useLiveQuery(() => db.sessions.toArray());
 
   // Handle initialization if profile is missing
-  if (profile === null) {
-    db.userProfile.add({
-      id: 'me',
-      totalXP: 0,
-      currentLevel: 1,
-      title: 'Novice Listener',
-      createdAt: Date.now(),
-      lastUpdated: Date.now()
-    });
-  }
+  useEffect(() => {
+    if (profile === null) {
+      db.userProfile.add({
+        id: 'me',
+        totalXP: 0,
+        currentLevel: 1,
+        title: 'Novice Listener',
+        createdAt: Date.now(),
+        lastUpdated: Date.now()
+      }).catch(err => console.error("Failed to initialize profile:", err));
+    }
+  }, [profile]);
 
-  if (profile === undefined || !unlockedBadges || !sessions) {
-    return <div className={styles.loading}>Loading achievements...</div>;
+  if (profile === undefined || unlockedBadges === undefined || sessions === undefined) {
+    return (
+      <div className={styles.loading}>
+        <div className={styles.spinner}></div>
+        <p>Loading achievements...</p>
+        <button onClick={() => window.location.reload()} style={{ marginTop: '1rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+          Reload if stuck
+        </button>
+      </div>
+    );
   }
 
   // Final fallback for missing profile after loading
   const currentProfile = profile || {
+    id: 'me',
     currentLevel: 1,
     totalXP: 0,
     title: 'Novice Listener'
