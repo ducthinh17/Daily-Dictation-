@@ -9,13 +9,24 @@ interface TranscribeButtonProps {
   disabled?: boolean;
 }
 
-const PHASE_LABELS: Record<string, string> = {
-  preparing: 'Preparing audio...',
-  uploading: 'Uploading to Groq...',
-  transcribing: 'Transcribing with Whisper...',
-  processing: 'Building segments...',
-  done: 'Transcription complete!',
-};
+function getStatusLabel(status: TranscribeStatus): string {
+  switch (status.phase) {
+    case 'preparing':
+      return 'Preparing audio...';
+    case 'splitting':
+      return status.message || 'Splitting large file...';
+    case 'uploading':
+      return (status as any).message || 'Uploading to Groq...';
+    case 'transcribing':
+      return (status as any).message || 'Transcribing with Whisper...';
+    case 'processing':
+      return 'Building segments...';
+    case 'done':
+      return 'Transcription complete!';
+    default:
+      return 'Processing...';
+  }
+}
 
 export function TranscribeButton({ status, onClick, disabled }: TranscribeButtonProps) {
   const isProcessing = status !== null && status.phase !== 'done' && status.phase !== 'error';
@@ -33,7 +44,7 @@ export function TranscribeButton({ status, onClick, disabled }: TranscribeButton
         {isProcessing ? (
           <>
             <Loader2 size={20} className="spin" />
-            <span>{status ? PHASE_LABELS[status.phase] || 'Processing...' : 'Processing...'}</span>
+            <span>{status ? getStatusLabel(status) : 'Processing...'}</span>
           </>
         ) : isDone ? (
           <>

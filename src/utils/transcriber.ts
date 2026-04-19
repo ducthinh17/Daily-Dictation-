@@ -31,28 +31,113 @@ export interface TranscribeOptions {
 
 export type TranscribeStatus =
   | { phase: 'preparing' }
-  | { phase: 'uploading' }
-  | { phase: 'transcribing' }
+  | { phase: 'splitting'; message: string }
+  | { phase: 'uploading'; message?: string }
+  | { phase: 'transcribing'; message?: string }
   | { phase: 'processing' }
   | { phase: 'done'; result: TranscriptResult }
   | { phase: 'error'; message: string };
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
 const WHISPER_MODEL = 'whisper-large-v3-turbo';
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
+const AUTO_SPLIT_THRESHOLD = 20 * 1024 * 1024; // 20MB
 
 /**
- * Transcribe an audio file using Groq's Whisper API (free tier).
- * Returns full transcript with segment-level and word-level timestamps.
+ * Transcribe audio — transparently handles large files by auto-splitting.
+ * For files > 20MB: splits into 10-minute chunks, transcribes each, merges results.
+ * For files <= 20MB: transcribes directly.
  */
 export async function transcribeAudio(options: TranscribeOptions): Promise<TranscriptResult> {
+  const { audioFile } = options;
+
+  if (audioFile.size > AUTO_SPLIT_THRESHOLD) {
+    return transcribeLargeAudio(options);
+  }
+
+  return transcribeSingleChunk(options);
+}
+
+/**
+ * Large file handler: split → transcribe each chunk → merge with offset timestamps.
+ */
+async function transcribeLargeAudio(options: TranscribeOptions): Promise<TranscriptResult> {
   const { audioFile, language, apiKey, onProgress } = options;
 
-  // Validate file size
-  if (audioFile.size > MAX_FILE_SIZE) {
-    const sizeMB = (audioFile.size / (1024 * 1024)).toFixed(1);
-    throw new Error(`File too large (${sizeMB}MB). Maximum is 25MB. Try compressing your audio first.`);
+  if (!apiKey.trim()) {
+    throw new Error('No API key configured. Please add your Groq API key in Settings.');
   }
+
+  // Phase: Splitting
+  onProgress?.({ phase: 'splitting', message: 'Decoding audio for splitting...' });
+
+  const { splitAudioFile } = await import('./audioSplitter');
+  const chunks = await splitAudioFile(audioFile, 600); // 10-minute chunks
+
+  onProgress?.({ phase: 'splitting', message: `Split into ${chunks.length} parts` });
+
+  const allSegments: WhisperSegment[] = [];
+  let fullText = '';
+  let totalDuration = 0;
+  let detectedLanguage = language as string;
+  let timeOffset = 0;
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const partLabel = `Part ${i + 1}/${chunks.length}`;
+
+    // Transcribe this chunk (no recursive onProgress — we control status here)
+    onProgress?.({ phase: 'uploading', message: `Uploading ${partLabel}...` });
+
+    const chunkResult = await transcribeSingleChunk({
+      audioFile: chunk,
+      language,
+      apiKey,
+      // No onProgress for individual chunks — we handle it above
+    });
+
+    onProgress?.({ phase: 'transcribing', message: `Transcribed ${partLabel}` });
+
+    // Merge: offset all timestamps by the accumulated duration
+    for (const seg of chunkResult.segments) {
+      allSegments.push({
+        ...seg,
+        id: allSegments.length,
+        start: seg.start + timeOffset,
+        end: seg.end + timeOffset,
+        words: seg.words?.map(w => ({
+          ...w,
+          start: w.start + timeOffset,
+          end: w.end + timeOffset,
+        })),
+      });
+    }
+
+    fullText += (fullText ? ' ' : '') + chunkResult.text;
+    detectedLanguage = chunkResult.language;
+    timeOffset += chunkResult.duration;
+    totalDuration += chunkResult.duration;
+  }
+
+  // Build merged result
+  onProgress?.({ phase: 'processing' });
+
+  const mergedResult: TranscriptResult = {
+    text: fullText,
+    segments: allSegments,
+    language: detectedLanguage,
+    duration: totalDuration,
+  };
+
+  onProgress?.({ phase: 'done', result: mergedResult });
+  return mergedResult;
+}
+
+/**
+ * Transcribe a single audio chunk using Groq's Whisper API.
+ * No file-size guard — caller is responsible for chunking.
+ */
+async function transcribeSingleChunk(options: TranscribeOptions): Promise<TranscriptResult> {
+  const { audioFile, language, apiKey, onProgress } = options;
 
   if (!apiKey.trim()) {
     throw new Error('No API key configured. Please add your Groq API key in Settings.');

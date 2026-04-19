@@ -65,6 +65,7 @@ export default function CreateLessonPage() {
     }
 
     try {
+      // transcribeAudio now transparently handles large files (auto-split + merge)
       const result = await transcribeAudio({
         audioFile,
         language,
