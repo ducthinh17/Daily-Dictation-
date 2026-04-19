@@ -81,21 +81,21 @@ export function AchievementsPage() {
           {(import.meta.env.DEV || isTakingTooLong) && (
             <button 
               onClick={async () => {
-                if(confirm("Hệ thống sẽ xóa dữ liệu cục bộ để sửa lỗi khởi tạo. Bạn có chắc chắn muốn thực hiện không?")) {
+                if(confirm("The system will clear local data to fix initialization errors. Are you sure you want to proceed?")) {
                   await db.delete();
                   window.location.reload();
                 }
               }} 
               className={styles.resetBtn}
             >
-              {isTakingTooLong ? "Reset & Fix" : "Nuke Database (Nuclear Fix)"}
+              {isTakingTooLong ? "Reset & Fix System" : "Nuke Database (Nuclear Fix)"}
             </button>
           )}
         </div>
         
         {isTakingTooLong && (
           <p className={styles.hint}>
-            Khởi tạo lần đầu có thể mất một chút thời gian. Nếu vẫn bị kẹt, hãy thử nút "Reset & Fix".
+            The first initialization might take a moment. If it stays stuck, please try the "Reset & Fix System" button.
           </p>
         )}
       </div>
