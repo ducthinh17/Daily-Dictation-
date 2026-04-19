@@ -100,6 +100,18 @@ export class DictinationDB extends Dexie {
         lastUpdated: Date.now()
       }).catch(e => console.log('Profile already exists', e));
     });
+
+    // Handle fresh install population
+    this.on('populate', async () => {
+      await this.userProfile.add({
+        id: 'me',
+        totalXP: 0,
+        currentLevel: 1,
+        title: 'Novice Listener',
+        createdAt: Date.now(),
+        lastUpdated: Date.now()
+      });
+    });
   }
 }
 

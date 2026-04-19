@@ -23,13 +23,32 @@ export function AchievementsPage() {
   const unlockedBadges = useLiveQuery(() => db.achievements.toArray());
   const sessions = useLiveQuery(() => db.sessions.toArray());
 
-  if (!profile || !unlockedBadges || !sessions) {
+  // Handle initialization if profile is missing
+  if (profile === null) {
+    db.userProfile.add({
+      id: 'me',
+      totalXP: 0,
+      currentLevel: 1,
+      title: 'Novice Listener',
+      createdAt: Date.now(),
+      lastUpdated: Date.now()
+    });
+  }
+
+  if (profile === undefined || !unlockedBadges || !sessions) {
     return <div className={styles.loading}>Loading achievements...</div>;
   }
 
+  // Final fallback for missing profile after loading
+  const currentProfile = profile || {
+    currentLevel: 1,
+    totalXP: 0,
+    title: 'Novice Listener'
+  };
+
   // Calculate XP progress to next level
-  const xpForNextLevel = profile.currentLevel * 1000;
-  const progressPercentage = Math.min((profile.totalXP / xpForNextLevel) * 100, 100);
+  const xpForNextLevel = currentProfile.currentLevel * 1000;
+  const progressPercentage = Math.min((currentProfile.totalXP / xpForNextLevel) * 100, 100);
 
   const unlockedBadgeIds = new Set(unlockedBadges.map(b => b.badgeId));
 
@@ -45,11 +64,11 @@ export function AchievementsPage() {
         </div>
         <div className={styles.levelBadge}>
           <div className={styles.levelRing}>
-            <span>{profile.currentLevel}</span>
+            <span>{currentProfile.currentLevel}</span>
           </div>
           <div className={styles.levelInfo}>
-            <span className={styles.levelLabel}>Level {profile.currentLevel}</span>
-            <span className={styles.levelTitle}>{profile.title}</span>
+            <span className={styles.levelLabel}>Level {currentProfile.currentLevel}</span>
+            <span className={styles.levelTitle}>{currentProfile.title}</span>
           </div>
         </div>
       </header>
@@ -59,8 +78,8 @@ export function AchievementsPage() {
           <div className={styles.xpHeader}>
             <div className={styles.xpText}>
               <Zap size={20} className={styles.xpIcon} />
-              <span className={styles.xpValue}>{profile.totalXP} XP</span>
-              <span className={styles.xpTotal}>/ {xpForNextLevel} XP to Level {profile.currentLevel + 1}</span>
+              <span className={styles.xpValue}>{currentProfile.totalXP} XP</span>
+              <span className={styles.xpTotal}>/ {xpForNextLevel} XP to Level {currentProfile.currentLevel + 1}</span>
             </div>
             <Badge variant="primary" size="sm">+50 XP per lesson</Badge>
           </div>
