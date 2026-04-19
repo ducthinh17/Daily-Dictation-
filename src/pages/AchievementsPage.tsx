@@ -25,17 +25,19 @@ export function AchievementsPage() {
 
   // Diagnostic logging
   useEffect(() => {
-    console.log("Achievements Debug:", { 
-      profile: profile === undefined ? 'loading' : (profile === null ? 'null' : 'ready'),
-      unlockedBadges: unlockedBadges === undefined ? 'loading' : 'ready',
-      sessions: sessions === undefined ? 'loading' : 'ready'
-    });
+    if (import.meta.env.DEV) {
+      console.log("Achievements Debug:", { 
+        profile: profile === undefined ? 'loading' : (profile === null ? 'null' : 'ready'),
+        unlockedBadges: unlockedBadges === undefined ? 'loading' : 'ready',
+        sessions: sessions === undefined ? 'loading' : 'ready'
+      });
+    }
   }, [profile, unlockedBadges, sessions]);
 
   // Handle initialization if profile is missing
   useEffect(() => {
     if (profile === null) {
-      console.log("Profile missing, creating 'me' record...");
+      if (import.meta.env.DEV) console.log("Profile missing, creating 'me' record...");
       db.userProfile.add({
         id: 'me',
         totalXP: 0,
@@ -52,24 +54,28 @@ export function AchievementsPage() {
       <div className={styles.loading}>
         <div className={styles.spinner}></div>
         <p>Loading achievements...</p>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', fontSize: '0.8rem', opacity: 0.7 }}>
-          <span>Status: Profile: {profile === undefined ? '⏳' : '✅'} | Badges: {unlockedBadges === undefined ? '⏳' : '✅'} | Sessions: {sessions === undefined ? '⏳' : '✅'}</span>
-        </div>
+        {import.meta.env.DEV && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', fontSize: '0.8rem', opacity: 0.7 }}>
+            <span>Status: Profile: {profile === undefined ? '⏳' : '✅'} | Badges: {unlockedBadges === undefined ? '⏳' : '✅'} | Sessions: {sessions === undefined ? '⏳' : '✅'}</span>
+          </div>
+        )}
         <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem' }}>
           <button onClick={() => window.location.reload()} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', cursor: 'pointer' }}>
             Reload Page
           </button>
-          <button 
-            onClick={async () => {
-              if(confirm("Dữ liệu của bạn sẽ bị xóa sạch để sửa lỗi hệ thống. Bạn có chắc chắn không?")) {
-                await db.delete();
-                window.location.reload();
-              }
-            }} 
-            style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ff4d4d', color: '#ff4d4d', background: 'transparent', cursor: 'pointer' }}
-          >
-            Nuke Database (Nuclear Fix)
-          </button>
+          {import.meta.env.DEV && (
+            <button 
+              onClick={async () => {
+                if(confirm("Dữ liệu của bạn sẽ bị xóa sạch để sửa lỗi hệ thống. Bạn có chắc chắn không?")) {
+                  await db.delete();
+                  window.location.reload();
+                }
+              }} 
+              style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #ff4d4d', color: '#ff4d4d', background: 'transparent', cursor: 'pointer' }}
+            >
+              Nuke Database (Nuclear Fix)
+            </button>
+          )}
         </div>
       </div>
     );
