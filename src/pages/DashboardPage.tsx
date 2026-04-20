@@ -22,6 +22,8 @@ import {
 import type { DailyStat } from '../db/statsQueries';
 import styles from './DashboardPage.module.css';
 import { Button } from '../components/ui/Button';
+import { RankBadge } from '../components/RankBadge';
+import { getRankForLevel, getNextLevelProgress } from '../utils/rankSystem';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -35,6 +37,18 @@ export default function DashboardPage() {
   const streak = useLiveQuery(() => getCurrentStreak()) || 0;
   const dailyStats = useLiveQuery(() => getDailyStats(90)) || [];
   const difficultWords = useLiveQuery(() => getDifficultWords(10)) || [];
+  
+  const profile = useLiveQuery(() => db.userProfile.get('me')) || {
+    id: 'me',
+    totalXP: 0,
+    currentLevel: 1,
+    title: 'Novice Listener',
+    createdAt: Date.now(),
+    lastUpdated: Date.now()
+  };
+
+  const rankInfo = getRankForLevel(profile.currentLevel);
+  const { xpRequired, xpProgress, percent } = getNextLevelProgress(profile.totalXP, profile.currentLevel);
 
   // Get the most recently active lesson
   const recentProgress = useLiveQuery(() => 
@@ -126,10 +140,24 @@ export default function DashboardPage() {
           <p className={styles.subtitle}>Track your dictation mastery progress.</p>
         </div>
         
-        <div className={styles.streakBadge}>
-          <Flame className={streak > 0 ? styles.flameActive : styles.flameInactive} />
-          <span className={styles.streakCount}>{streak}</span>
-          <span className={styles.streakLabel}>Day Streak</span>
+        <div className={styles.headerRight}>
+          <div className={styles.rankContainer}>
+            <RankBadge rank={rankInfo} level={profile.currentLevel} size="sm" />
+            <div className={styles.xpProgressContainer}>
+              <div className={styles.xpText}>
+                <span>{xpProgress} / {xpRequired} XP</span>
+              </div>
+              <div className={styles.xpBarBg}>
+                <div className={styles.xpBarFill} style={{ width: `${percent}%`, background: rankInfo.gradient }} />
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.streakBadge}>
+            <Flame className={streak > 0 ? styles.flameActive : styles.flameInactive} />
+            <span className={styles.streakCount}>{streak}</span>
+            <span className={styles.streakLabel}>Day Streak</span>
+          </div>
         </div>
       </header>
 

@@ -102,8 +102,8 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
   popupStyle.left = leftPos;
 
   // Render helpers
-  const playAudio = (audioUrl?: string, accent?: 'US' | 'UK' | 'unknown') => {
-    dictionaryService.playAudio(audioUrl, word, accent === 'UK' ? 'UK' : 'US');
+  const playAudio = (audioUrl?: string, accent?: 'US' | 'UK' | 'AU' | 'IN' | 'unknown') => {
+    dictionaryService.playAudio(audioUrl, word, (accent === 'UK' || accent === 'AU' || accent === 'IN') ? accent : 'US');
   };
 
   const usPhonetic = data?.phonetics.find(p => p.accent === 'US' && p.text);
@@ -159,6 +159,18 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
                   </button>
                </div>
             )}
+            
+            <div className="dict-extra-voices">
+              <span className="voices-label">More Voices:</span>
+              <div className="voices-row">
+                <button className="voice-btn au" onClick={() => dictionaryService.playTTS(word, 'AU')}>
+                  <Volume2 size={12} /> AU
+                </button>
+                <button className="voice-btn in" onClick={() => dictionaryService.playTTS(word, 'IN')}>
+                  <Volume2 size={12} /> IN
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

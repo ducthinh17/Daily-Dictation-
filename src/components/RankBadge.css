@@ -1,0 +1,114 @@
+.rank-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rank-badge-container.size-sm .rank-badge-shield {
+  width: 36px;
+  height: 40px;
+  border-width: 2px;
+}
+
+.rank-badge-container.size-sm .rank-badge-icon {
+  font-size: 14px;
+}
+
+.rank-badge-container.size-sm .rank-badge-level {
+  font-size: 10px;
+  bottom: -6px;
+  padding: 1px 6px;
+}
+
+.rank-badge-container.size-md .rank-badge-shield {
+  width: 48px;
+  height: 56px;
+  border-width: 2px;
+}
+
+.rank-badge-container.size-md .rank-badge-icon {
+  font-size: 20px;
+}
+
+.rank-badge-container.size-md .rank-badge-level {
+  font-size: 12px;
+  bottom: -8px;
+  padding: 2px 8px;
+}
+
+.rank-badge-container.size-lg .rank-badge-shield {
+  width: 80px;
+  height: 96px;
+  border-width: 3px;
+}
+
+.rank-badge-container.size-lg .rank-badge-icon {
+  font-size: 36px;
+}
+
+.rank-badge-container.size-lg .rank-badge-level {
+  font-size: 16px;
+  bottom: -10px;
+  padding: 4px 12px;
+  border-width: 2px;
+}
+
+.rank-badge-shield {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-style: solid;
+  border-radius: 8px 8px 16px 16px; /* slightly pointed bottom */
+  color: white;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.rank-badge-shield:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.rank-badge-icon {
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.rank-badge-level {
+  position: absolute;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  line-height: 1;
+}
+
+.rank-badge-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.rank-badge-title {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.rank-badge-container.size-sm .rank-badge-title {
+  font-size: 0.875rem;
+}
+
+.rank-badge-container.size-lg .rank-badge-title {
+  font-size: 1.25rem;
+}
+
+.rank-badge-tier {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}

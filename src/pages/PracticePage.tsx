@@ -17,6 +17,7 @@ import { Settings } from '../components/Settings';
 import { Button } from '../components/ui/Button';
 import { CompletedSegmentView } from '../components/CompletedSegmentView';
 import { SegmentNavBar } from '../components/SegmentNavBar';
+import { ShadowingMode } from '../components/ShadowingMode';
 import './PracticePage.css';
 
 export default function PracticePage() {
@@ -56,6 +57,11 @@ export default function PracticePage() {
 
   // ── NEW: which completed segment are we previewing? null = active practice mode
   const [viewingCompletedIndex, setViewingCompletedIndex] = useState<number | null>(null);
+
+  // Shadowing Mode State
+  const [practiceMode, setPracticeMode] = useState<'dictation' | 'shadowing'>('dictation');
+  const [shadowingScore, setShadowingScore] = useState<number | null>(null);
+  const [isShadowingComplete, setIsShadowingComplete] = useState(false);
 
   const currentIndex = progress?.currentSegmentIndex || 0;
   const totalSegments = segments?.length || 0;
@@ -121,12 +127,16 @@ export default function PracticePage() {
       // Preview mode — don't mutate DB progress
       setViewingCompletedIndex(prevIndex);
       setCheckResult(null);
+      setShadowingScore(null);
+      setIsShadowingComplete(false);
       // slight delay so segment loads
       setTimeout(() => playSegmentByIndex(prevIndex), 50);
     } else {
       // Not completed — navigate back in active practice
       setViewingCompletedIndex(null);
       setCheckResult(null);
+      setShadowingScore(null);
+      setIsShadowingComplete(false);
       advanceSegment(prevIndex);
     }
   }, [isViewingCompleted, viewingCompletedIndex, currentIndex, progress, advanceSegment, playSegmentByIndex]);
@@ -138,6 +148,8 @@ export default function PracticePage() {
       if (nextIndex > currentIndex) {
         // Back to active practice
         setViewingCompletedIndex(null);
+        setShadowingScore(null);
+        setIsShadowingComplete(false);
         playCurrentSegment();
         return;
       }
@@ -145,10 +157,14 @@ export default function PracticePage() {
       if (isCompleted) {
         setViewingCompletedIndex(nextIndex);
         setCheckResult(null);
+        setShadowingScore(null);
+        setIsShadowingComplete(false);
         setTimeout(() => playSegmentByIndex(nextIndex), 50);
       } else {
         // nextIndex === currentIndex → resume active
         setViewingCompletedIndex(null);
+        setShadowingScore(null);
+        setIsShadowingComplete(false);
         playCurrentSegment();
       }
       return;
@@ -158,6 +174,8 @@ export default function PracticePage() {
     if (currentIndex < totalSegments - 1) {
       advanceSegment(currentIndex + 1);
       setCheckResult(null);
+      setShadowingScore(null);
+      setIsShadowingComplete(false);
     } else {
       completeLesson();
       setShowCompletion(true);
@@ -299,6 +317,9 @@ export default function PracticePage() {
     setViewingCompletedIndex(null);
     setShowCompletion(false);
     setCheckResult(null);
+    setPracticeMode('dictation');
+    setShadowingScore(null);
+    setIsShadowingComplete(false);
     handleReplay();
   };
 
@@ -346,9 +367,20 @@ export default function PracticePage() {
                 <span>Segment {currentIndex + 1} of {totalSegments}</span>
               </div>
             )}
-            <div className="practice-mode-badge">
+            <div 
+              className="practice-mode-badge" 
+              onClick={() => {
+                if (!isViewingCompleted) {
+                  setPracticeMode(prev => prev === 'dictation' ? 'shadowing' : 'dictation');
+                  setShadowingScore(null);
+                  setIsShadowingComplete(false);
+                }
+              }}
+              style={{ cursor: isViewingCompleted ? 'default' : 'pointer' }}
+              title={!isViewingCompleted ? 'Click to toggle mode' : ''}
+            >
               <LayoutDashboard size={12} />
-              <span>{isViewingCompleted ? 'Review Mode' : 'Dictation Mode'}</span>
+              <span>{isViewingCompleted ? 'Review Mode' : practiceMode === 'dictation' ? 'Dictation Mode' : 'Shadowing Mode'}</span>
             </div>
           </div>
 
@@ -415,6 +447,21 @@ export default function PracticePage() {
                 setTimeout(() => playCurrentSegment(), 50);
               }}
             />
+          ) : practiceMode === 'shadowing' ? (
+            <ShadowingMode
+              expectedText={currentSegment?.text || ''}
+              language={lesson?.language || 'en'}
+              isComplete={isShadowingComplete}
+              score={shadowingScore}
+              onComplete={async (accuracy) => {
+                setShadowingScore(accuracy);
+                setIsShadowingComplete(true);
+                // Optionally auto-complete if accuracy is very high
+                if (accuracy >= 80) {
+                  await recordAttempt(currentIndex, true);
+                }
+              }}
+            />
           ) : (
             /* ── ACTIVE PRACTICE MODE ── */
             <>
@@ -444,7 +491,7 @@ export default function PracticePage() {
               ← Prev
             </Button>
 
-            {!isViewingCompleted && (
+            {!isViewingCompleted && practiceMode === 'dictation' && (
               <>
                 <Button
                   onClick={handleSubmit}

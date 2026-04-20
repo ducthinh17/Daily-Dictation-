@@ -132,7 +132,7 @@ export const dictionaryService = {
     };
   },
 
-  playAudio(audioUrl?: string, text?: string, fallbackAccent: 'US' | 'UK' = 'US') {
+  playAudio(audioUrl?: string, text?: string, fallbackAccent: 'US' | 'UK' | 'AU' | 'IN' = 'US') {
       if (audioUrl) {
           const audio = new Audio(audioUrl);
           audio.play().catch(e => {
@@ -144,22 +144,45 @@ export const dictionaryService = {
       }
   },
 
-  playTTS(text: string, accent: 'US' | 'UK') {
+  playTTS(text: string, accent: 'US' | 'UK' | 'AU' | 'IN') {
     const cleanText = text.replace(/[^a-zA-Z0-9-'\s.,?!]/g, '').trim();
     if (!cleanText) return;
 
-    // Try Youdao
-    const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(cleanText)}&type=${accent === 'US' ? 2 : 1}`;
-    const audio = new Audio(audioUrl);
-    
-    audio.play().catch(() => {
-      // Fallback to window.speechSynthesis
-      if (!window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
+    // Youdao only supports US(2) and UK(1).
+    if (accent === 'US' || accent === 'UK') {
+      const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(cleanText)}&type=${accent === 'US' ? 2 : 1}`;
+      const audio = new Audio(audioUrl);
       
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = accent === 'US' ? 'en-US' : 'en-GB';
-      window.speechSynthesis.speak(utterance);
-    });
+      audio.play().catch(() => {
+        this._playBrowserTTS(cleanText, accent);
+      });
+    } else {
+      this._playBrowserTTS(cleanText, accent);
+    }
+  },
+
+  _playBrowserTTS(text: string, accent: 'US' | 'UK' | 'AU' | 'IN') {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    const langMap = {
+        'US': 'en-US',
+        'UK': 'en-GB',
+        'AU': 'en-AU',
+        'IN': 'en-IN'
+    };
+    utterance.lang = langMap[accent];
+    
+    // Try to find a good voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoices = voices.filter(v => v.lang.includes(langMap[accent]) || v.lang.includes(langMap[accent].replace('-', '_')));
+    if (preferredVoices.length > 0) {
+        // prefer voices with "Premium", "Natural", "Google" in the name
+        const premium = preferredVoices.find(v => v.name.includes('Premium') || v.name.includes('Natural') || v.name.includes('Google'));
+        utterance.voice = premium || preferredVoices[0];
+    }
+
+    window.speechSynthesis.speak(utterance);
   }
 };

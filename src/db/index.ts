@@ -14,6 +14,13 @@ export class DictinationDB extends Dexie {
   dictionaryCache!: Table<{word: string, cachedAt: number, data: any}, string>;
   audioBookmarks!: Table<import('../types').AudioBookmark, string>;
   bookmarkTopics!: Table<import('../types').BookmarkTopic, string>;
+  
+  // Phase 3 & 4
+  xpLog!: Table<any, string>;
+  dailyGoals!: Table<any, string>;
+  weeklyQuests!: Table<any, string>;
+  srsCards!: Table<any, string>;
+  masteredWords!: Table<any, string>;
 
   constructor() {
     super('DictinationDB');
@@ -154,6 +161,31 @@ export class DictinationDB extends Dexie {
         { id: 'topic-daily', name: 'Daily Life', color: '#f59e0b', bookmarkCount: 0, createdAt: Date.now() },
         { id: 'topic-custom', name: 'Custom', color: '#8b5cf6', bookmarkCount: 0, createdAt: Date.now() }
       ]).catch(e => console.log('Default topics already exist', e));
+    });
+
+    // Version 8: Full Pro Features (Phase 3 and 4)
+    this.version(8).stores({
+      collections: 'id, category, createdAt',
+      lessons: 'id, collectionId, order, createdAt',
+      segments: 'id, lessonId, index',
+      progress: 'lessonId, lastActiveAt',
+      sessions: 'id, lessonId, startedAt, mode', // Added mode index
+      wordErrors: 'id, word, lessonId, timestamp',
+      userProfile: 'id',
+      achievements: 'id, badgeId, unlockedAt',
+      settings: 'id',
+      dictionaryCache: 'word, cachedAt',
+      audioBookmarks: 'id, lessonId, segmentIndex, createdAt, *topicTags',
+      bookmarkTopics: 'id, name, createdAt',
+      
+      // NEW Phase 3
+      xpLog: 'id, type, amount, timestamp',
+      dailyGoals: 'id, date',
+      weeklyQuests: 'id, weekStart',
+      
+      // NEW Phase 4  
+      srsCards: 'id, word, nextReviewAt, repetitions',
+      masteredWords: 'id, word, masteredAt'
     });
 
     // Handle fresh install population
