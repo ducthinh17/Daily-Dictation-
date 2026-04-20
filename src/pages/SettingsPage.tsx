@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Eye, EyeOff, CheckCircle, AlertCircle, Key, Loader2, Save } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { getGroqApiKey, setGroqApiKey, testGroqApiKey, getDefaultLanguage, setDefaultLanguage } from '../utils/settingsStore';
-import type { SupportedLanguage } from '../utils/settingsStore';
+import type { SupportedLanguage } from '../types';
 import '../components/Settings.css'; // Reuse existing CSS for inputs and options
 import './SettingsPage.css';
 

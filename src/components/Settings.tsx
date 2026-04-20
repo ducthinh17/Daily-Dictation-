@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Eye, EyeOff, CheckCircle, AlertCircle, Key, Loader2 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { getGroqApiKey, setGroqApiKey, testGroqApiKey, getDefaultLanguage, setDefaultLanguage } from '../utils/settingsStore';
-import type { SupportedLanguage } from '../utils/settingsStore';
+import type { SupportedLanguage } from '../types';
 import './Settings.css';
 
 interface SettingsProps {
