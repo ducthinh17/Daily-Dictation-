@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon, Sun, Moon, Bookmark, Target, Activity } from 'lucide-react';
+import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon, Sun, Moon, Bookmark, Target, Activity, BarChart3, Stethoscope } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import './Sidebar.css';
 
@@ -22,6 +22,10 @@ export function Sidebar() {
           <Activity size={20} />
           <span>Reports</span>
         </NavLink>
+        <NavLink to="/analytics" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <BarChart3 size={20} />
+          <span>Analytics</span>
+        </NavLink>
         <NavLink to="/library" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Library size={20} />
           <span>Library</span>
@@ -41,6 +45,10 @@ export function Sidebar() {
         <NavLink to="/achievements" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Award size={20} />
           <span>Achievements</span>
+        </NavLink>
+        <NavLink to="/diagnostic" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <Stethoscope size={20} />
+          <span>Diagnostic</span>
         </NavLink>
       </nav>
 

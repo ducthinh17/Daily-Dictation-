@@ -1,0 +1,21 @@
+.analytics-page .page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.ana-period-tabs { display: flex; gap: 0.25rem; background: var(--bg-hover); border-radius: 10px; padding: 3px; }
+.ana-period-btn {
+  padding: 0.4rem 0.9rem; border: none; background: transparent; color: var(--text-secondary);
+  font-size: 0.85rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all var(--transition-fast);
+}
+.ana-period-btn.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+.ana-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-top: 1.5rem; }
+@media (max-width: 900px) { .ana-grid { grid-template-columns: 1fr; } }
+.ana-card {
+  background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  padding: 1.25rem; backdrop-filter: blur(10px);
+}
+.ana-card-wide { grid-column: 1 / -1; }
+.ana-card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+.ana-card-header h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0; flex: 1; }
+.ana-best-badge { font-size: 0.75rem; font-weight: 600; color: #06b6d4; background: rgba(6,182,212,0.1); padding: 0.2rem 0.6rem; border-radius: 6px; }
+.ana-hourly-grid { display: flex; gap: 2px; height: 120px; align-items: flex-end; }
+.ana-hour-cell { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; gap: 4px; }
+.ana-hour-bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 4px; transition: height 0.5s ease; }
+.ana-hour-label { font-size: 9px; color: var(--text-secondary); }

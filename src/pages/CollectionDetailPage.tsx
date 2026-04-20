@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Edit3, Trash2, Plus, Play, MoreVertical, BookOpen, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit3, Trash2, Plus, Play, MoreVertical, BookOpen, Calendar, Download } from 'lucide-react';
 import { db } from '../db';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { Modal } from '../components/ui/Modal';
 import { Button } from '../components/ui/Button';
 import { useLesson } from '../hooks/useLesson';
 import type { LessonCategory, DifficultyLevel } from '../types';
+import { exportCollection, downloadBlob } from '../utils/contentExporter';
 import './CollectionDetailPage.css';
 
 export function CollectionDetailPage() {
@@ -18,6 +19,7 @@ export function CollectionDetailPage() {
   const [editDesc, setEditDesc] = useState('');
   const [editCategory, setEditCategory] = useState<LessonCategory>('custom');
   const [editDifficulty, setEditDifficulty] = useState<DifficultyLevel>('beginner');
+  const [exporting, setExporting] = useState(false);
 
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingLesson, setEditingLesson] = useState<{id: string, title: string} | null>(null);
@@ -148,6 +150,21 @@ export function CollectionDetailPage() {
             </>
           ) : (
             <>
+              <button className="icon-btn" onClick={async () => {
+                if (!id) return;
+                setExporting(true);
+                try {
+                  const blob = await exportCollection(id);
+                  const safeName = collection.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                  downloadBlob(blob, `${safeName}.dictination`);
+                } catch (err: any) {
+                  alert(`Export failed: ${err.message}`);
+                } finally {
+                  setExporting(false);
+                }
+              }} title="Export Collection" disabled={exporting}>
+                <Download size={18} />
+              </button>
               <button className="icon-btn" onClick={handleEdit} title="Edit Collection">
                 <Edit3 size={18} />
               </button>

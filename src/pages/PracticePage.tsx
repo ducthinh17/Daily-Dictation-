@@ -238,6 +238,26 @@ export default function PracticePage() {
           const tip = findTipForError(firstErr.expectedWord, firstErr.typedWord);
           if (tip) setGrammarTip(tip);
         }
+
+        // Auto-save to Sentence Bank for context-rich review
+        const sentenceText = currentSegment.text;
+        for (const err of errors) {
+          const existing = await db.sentenceBank
+            .where('word').equals(err.expectedWord.toLowerCase())
+            .filter(s => s.lessonId === (lessonId || '') && s.segmentIndex === currentIndex)
+            .first();
+          if (!existing) {
+            await db.sentenceBank.add({
+              id: crypto.randomUUID(),
+              word: err.expectedWord.toLowerCase(),
+              sentence: sentenceText,
+              lessonId: lessonId || '',
+              segmentIndex: currentIndex,
+              createdAt: Date.now(),
+              reviewCount: 0,
+            });
+          }
+        }
       }
     }
 

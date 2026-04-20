@@ -46,51 +46,49 @@ export function calculateNextReview(
 }
 
 export async function processReview(word: string, quality: number) {
-  return await db.transaction('rw', db.srsCards, async () => {
-    let card = await db.srsCards.where('word').equals(word.toLowerCase()).first();
-    
-    if (!card) {
-      card = {
-        id: crypto.randomUUID(),
-        word: word.toLowerCase(),
-        nextReviewAt: 0,
-        repetitions: 0,
-        easinessFactor: 2.5,
-        interval: 0,
-        lastReviewedAt: Date.now()
-      };
-    }
+  let card = await db.srsCards.where('word').equals(word.toLowerCase()).first();
+  
+  if (!card) {
+    card = {
+      id: crypto.randomUUID(),
+      word: word.toLowerCase(),
+      nextReviewAt: 0,
+      repetitions: 0,
+      easinessFactor: 2.5,
+      interval: 0,
+      lastReviewedAt: Date.now()
+    };
+  }
 
-    const nextState = calculateNextReview(quality, card.repetitions, card.easinessFactor, card.interval);
-    
-    card.nextReviewAt = nextState.nextReviewAt;
-    card.repetitions = nextState.repetitions;
-    card.easinessFactor = nextState.easinessFactor;
-    card.interval = nextState.interval;
-    card.lastReviewedAt = Date.now();
+  const nextState = calculateNextReview(quality, card.repetitions, card.easinessFactor, card.interval);
+  
+  card.nextReviewAt = nextState.nextReviewAt;
+  card.repetitions = nextState.repetitions;
+  card.easinessFactor = nextState.easinessFactor;
+  card.interval = nextState.interval;
+  card.lastReviewedAt = Date.now();
 
-    await db.srsCards.put(card);
+  await db.srsCards.put(card);
 
-    // Gamification
-    if (quality >= 3) {
-      await awardXP({
-        type: 'review_word',
-        metadata: { accuracy: quality === 5 ? 100 : quality * 20 }
-      });
-      await updateGoalProgress('review_words', 1);
-    }
-    
-    // Mastered logic (e.g. interval > 21 days is considered mastered)
-    if (card.interval > 21) {
-      await db.masteredWords.put({
-        id: crypto.randomUUID(),
-        word: card.word,
-        masteredAt: Date.now()
-      });
-    }
+  // Gamification
+  if (quality >= 3) {
+    await awardXP({
+      type: 'review_word',
+      metadata: { accuracy: quality === 5 ? 100 : quality * 20 }
+    });
+    await updateGoalProgress('review_words', 1);
+  }
+  
+  // Mastered logic (e.g. interval > 21 days is considered mastered)
+  if (card.interval > 21) {
+    await db.masteredWords.put({
+      id: crypto.randomUUID(),
+      word: card.word,
+      masteredAt: Date.now()
+    });
+  }
 
-    return card;
-  });
+  return card;
 }
 
 export async function getDueCards(limit: number = 20) {

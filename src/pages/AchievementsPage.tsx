@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Trophy, Target, Award, Zap } from 'lucide-react';
+import { Trophy, Target, Award, Zap, Medal } from 'lucide-react';
 import { db } from '../db';
 import { Tabs } from '../components/ui/Tabs';
 import { Card } from '../components/ui/Card';
@@ -9,6 +9,7 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import styles from './AchievementsPage.module.css';
 
 import { ACHIEVEMENTS } from '../utils/achievementEngine';
+import { PersonalRecords } from '../components/PersonalRecords';
 
 export function AchievementsPage() {
 
@@ -149,6 +150,7 @@ export function AchievementsPage() {
       <Tabs defaultValue="overview">
         <Tabs.List>
           <Tabs.Trigger value="overview" icon={<Trophy size={16} />}>My Badges</Tabs.Trigger>
+          <Tabs.Trigger value="records" icon={<Medal size={16} />}>Records</Tabs.Trigger>
           <Tabs.Trigger value="stats" icon={<Target size={16} />}>Statistics</Tabs.Trigger>
         </Tabs.List>
 
@@ -195,6 +197,10 @@ export function AchievementsPage() {
               );
             })}
           </div>
+        </Tabs.Content>
+
+        <Tabs.Content value="records">
+          <PersonalRecords />
         </Tabs.Content>
 
         <Tabs.Content value="stats">

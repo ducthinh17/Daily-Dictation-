@@ -62,8 +62,22 @@
   flex-direction: column;
 }
 
+.cardFront {
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.flipped .cardFront {
+  pointer-events: none;
+}
+
 .cardBack {
   transform: rotateY(180deg);
+  pointer-events: none;
+}
+
+.flipped .cardBack {
+  pointer-events: auto;
 }
 
 .cardBody {

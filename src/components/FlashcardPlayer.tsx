@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { Volume2, RotateCcw, Check, ThumbsUp, HelpCircle } from 'lucide-react';
 import { Card } from './ui/Card';
 import { getDueCards, processReview, type SRSCard } from '../utils/srsEngine';
-import { playAudio } from '../utils/ttsEngine';
-import { db } from '../db';
+import { dictionaryService } from '../utils/dictionaryService';
 import styles from './FlashcardPlayer.module.css';
 
 export function FlashcardPlayer({ onComplete }: { onComplete: () => void }) {
@@ -11,15 +10,10 @@ export function FlashcardPlayer({ onComplete }: { onComplete: () => void }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [ttsEngine, setTtsEngine] = useState<'groq' | 'browser'>('browser');
   const [typedAnswer, setTypedAnswer] = useState('');
 
   useEffect(() => {
     async function init() {
-      const settings = await db.settings.get('global');
-      if (settings) {
-        setTtsEngine(settings.transcribeEngine);
-      }
       const due = await getDueCards(20);
       setCards(due);
       setLoading(false);
@@ -32,7 +26,7 @@ export function FlashcardPlayer({ onComplete }: { onComplete: () => void }) {
   const handlePlayAudio = async () => {
     if (!currentCard) return;
     try {
-      await playAudio(currentCard.word, ttsEngine);
+      dictionaryService.playAudio(undefined, currentCard.word, 'US');
     } catch (e) {
       console.error('Failed to play audio', e);
     }

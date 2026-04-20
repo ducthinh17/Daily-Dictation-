@@ -11,6 +11,8 @@ import { BookmarksPage } from './pages/BookmarksPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { QuestsPage } from './pages/QuestsPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
+import { DiagnosticPage } from './pages/DiagnosticPage';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           <Route path="/review" element={<ReviewPage />} />
           <Route path="/quests" element={<QuestsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/diagnostic" element={<DiagnosticPage />} />
           <Route path="/collection/:id" element={<CollectionDetailPage />} />
           <Route path="/create" element={<CreateLessonPage />} />
           <Route path="/practice/:lessonId" element={<PracticePage />} />

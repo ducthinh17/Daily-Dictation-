@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Lesson, Segment, Progress, Collection, PracticeSession, WordError, UserProfile, Achievement, SystemSettings, XPLog, DailyGoal, WeeklyQuest, SRSCard, MasteredWord } from '../types';
+import type { Lesson, Segment, Progress, Collection, PracticeSession, WordError, UserProfile, Achievement, SystemSettings, XPLog, DailyGoal, WeeklyQuest, SRSCard, MasteredWord, BankedSentence, DiagnosticResult } from '../types';
 
 export class DictinationDB extends Dexie {
   collections!: Table<Collection, string>;
@@ -21,6 +21,10 @@ export class DictinationDB extends Dexie {
   weeklyQuests!: Table<WeeklyQuest, string>;
   srsCards!: Table<SRSCard, string>;
   masteredWords!: Table<MasteredWord, string>;
+
+  // Sprint 2+3
+  sentenceBank!: Table<BankedSentence, string>;
+  diagnosticResults!: Table<DiagnosticResult, string>;
 
   constructor() {
     super('DictinationDB');
@@ -186,6 +190,29 @@ export class DictinationDB extends Dexie {
       // NEW Phase 4  
       srsCards: 'id, word, nextReviewAt, repetitions',
       masteredWords: 'id, word, masteredAt'
+    });
+
+    // Version 9: Sentence Bank + Diagnostic
+    this.version(9).stores({
+      collections: 'id, category, createdAt',
+      lessons: 'id, collectionId, order, createdAt',
+      segments: 'id, lessonId, index',
+      progress: 'lessonId, lastActiveAt',
+      sessions: 'id, lessonId, startedAt, mode',
+      wordErrors: 'id, word, lessonId, timestamp',
+      userProfile: 'id',
+      achievements: 'id, badgeId, unlockedAt',
+      settings: 'id',
+      dictionaryCache: 'word, cachedAt',
+      audioBookmarks: 'id, lessonId, segmentIndex, createdAt, *topicTags',
+      bookmarkTopics: 'id, name, createdAt',
+      xpLog: 'id, type, amount, timestamp',
+      dailyGoals: 'id, date',
+      weeklyQuests: 'id, weekStart',
+      srsCards: 'id, word, nextReviewAt, repetitions',
+      masteredWords: 'id, word, masteredAt',
+      sentenceBank: 'id, word, lessonId, createdAt',
+      diagnosticResults: 'id, takenAt'
     });
 
     // Handle fresh install population

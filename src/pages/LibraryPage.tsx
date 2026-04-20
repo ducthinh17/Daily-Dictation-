@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Library, Plus, Search, FolderOpen } from 'lucide-react';
+import { Library, Plus, Search, FolderOpen, Upload } from 'lucide-react';
 import { db } from '../db';
 import { CollectionCard } from '../components/CollectionCard';
+import { importDictinationFile } from '../utils/contentImporter';
 import type { Collection, LessonCategory } from '../types';
 import './LibraryPage.css';
 
@@ -11,6 +12,8 @@ export function LibraryPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<LessonCategory | 'all'>('all');
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const collections = useLiveQuery(
     () => db.collections.orderBy('createdAt').reverse().toArray()
@@ -60,6 +63,25 @@ export function LibraryPage() {
     navigate(`/collection/${id}`);
   };
 
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const result = await importDictinationFile(file);
+      if (result.success) {
+        alert(`✅ Imported "${result.collectionTitle}" with ${result.lessonsImported} lessons!`);
+      } else {
+        alert(`❌ Import failed: ${result.error}`);
+      }
+    } catch (err: any) {
+      alert(`❌ Error: ${err.message}`);
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="library-page page-container">
       <div className="page-header">
@@ -67,10 +89,23 @@ export function LibraryPage() {
           <Library className="header-icon" size={36} />
           <h1>My Library</h1>
         </div>
-        <button className="primary-button" onClick={handleCreateCollection}>
-          <Plus size={18} />
-          <span>New Collection</span>
-        </button>
+        <div className="header-actions-row">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".dictination,.zip"
+            onChange={handleImport}
+            style={{ display: 'none' }}
+          />
+          <button className="secondary-button" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+            <Upload size={18} />
+            <span>{importing ? 'Importing...' : 'Import'}</span>
+          </button>
+          <button className="primary-button" onClick={handleCreateCollection}>
+            <Plus size={18} />
+            <span>New Collection</span>
+          </button>
+        </div>
       </div>
 
       <div className="library-controls">

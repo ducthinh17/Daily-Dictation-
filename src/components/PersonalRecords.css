@@ -1,0 +1,17 @@
+.pr-loading { padding: 2rem; text-align: center; color: var(--text-secondary); }
+.pr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+.pr-card {
+  display: flex; align-items: flex-start; gap: 1rem;
+  padding: 1.25rem; background: var(--bg-card); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); transition: all var(--transition-fast);
+}
+.pr-card:hover { border-color: var(--pr-color); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.pr-icon-wrap {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: color-mix(in srgb, var(--pr-color) 12%, transparent);
+  color: var(--pr-color); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.pr-info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.pr-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.pr-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); line-height: 1.2; }
+.pr-detail { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

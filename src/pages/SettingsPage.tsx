@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, CheckCircle, AlertCircle, Key, Loader2, Save } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, CheckCircle, AlertCircle, Key, Loader2, Save, Stethoscope } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { getGroqApiKey, setGroqApiKey, testGroqApiKey, getDefaultLanguage, setDefaultLanguage } from '../utils/settingsStore';
 import type { SupportedLanguage } from '../types';
@@ -13,6 +14,7 @@ export function SettingsPage() {
   const [testError, setTestError] = useState('');
   const [language, setLanguageLocal] = useState<SupportedLanguage>('en');
   const [isSaved, setIsSaved] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getGroqApiKey().then(setApiKeyLocal);
@@ -149,6 +151,21 @@ export function SettingsPage() {
               <Button onClick={handleSave} className="save-btn" size="lg">
                 <Save size={18} />
                 {isSaved ? 'Saved Successfully' : 'Save Preferences'}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="settings-card glass-panel">
+          <div className="settings-card-header">
+            <h3><Stethoscope size={20} /> Listening Diagnostic</h3>
+            <p className="settings-hint">Assess your English listening level with a 10-question progressive test using browser TTS.</p>
+          </div>
+          <div className="settings-body no-padding">
+            <div className="settings-section">
+              <Button onClick={() => navigate('/diagnostic')} variant="secondary" size="lg" className="save-btn">
+                <Stethoscope size={18} />
+                Take Listening Test
               </Button>
             </div>
           </div>

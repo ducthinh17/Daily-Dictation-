@@ -171,3 +171,24 @@ export interface MasteredWord {
   word: string;
   masteredAt: number;
 }
+
+// Sprint 2: Sentence Bank
+export interface BankedSentence {
+  id: string;
+  word: string;
+  sentence: string;
+  lessonId: string;
+  segmentIndex: number;
+  createdAt: number;
+  reviewCount: number;
+  lastReviewedAt?: number;
+}
+
+// Sprint 3: Diagnostic Test
+export interface DiagnosticResult {
+  id: string;
+  score: number;
+  level: number;
+  details: { level: number; accuracy: number }[];
+  takenAt: number;
+}
