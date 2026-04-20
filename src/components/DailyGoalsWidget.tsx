@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Target, Award, ChevronRight } from 'lucide-react';
+import { Target, Award } from 'lucide-react';
 import { getDailyGoals } from '../utils/questEngine';
 import type { DailyGoal } from '../types';
 import { DailyGoalRing } from './DailyGoalRing';

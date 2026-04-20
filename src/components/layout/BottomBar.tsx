@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon, Star, Target, Activity, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Library, Repeat, Award, BarChart3 } from 'lucide-react';
 import './BottomBar.css';
 
 export function BottomBar() {
@@ -9,37 +9,21 @@ export function BottomBar() {
         <LayoutDashboard size={24} />
         <span className="bottom-nav-label">Home</span>
       </NavLink>
-      <NavLink to="/reports" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
-        <Activity size={24} />
-        <span className="bottom-nav-label">Reports</span>
-      </NavLink>
-      <NavLink to="/analytics" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
-        <BarChart3 size={24} />
-        <span className="bottom-nav-label">Analytics</span>
-      </NavLink>
       <NavLink to="/library" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
         <Library size={24} />
         <span className="bottom-nav-label">Library</span>
+      </NavLink>
+      <NavLink to="/progress" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
+        <BarChart3 size={24} />
+        <span className="bottom-nav-label">Progress</span>
       </NavLink>
       <NavLink to="/review" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
         <Repeat size={24} />
         <span className="bottom-nav-label">Review</span>
       </NavLink>
-      <NavLink to="/bookmarks" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
-        <Star size={24} />
-        <span className="bottom-nav-label">Starred</span>
-      </NavLink>
-      <NavLink to="/quests" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
-        <Target size={24} />
-        <span className="bottom-nav-label">Quests</span>
-      </NavLink>
       <NavLink to="/achievements" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
         <Award size={24} />
         <span className="bottom-nav-label">Achieve</span>
-      </NavLink>
-      <NavLink to="/settings" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
-        <SettingsIcon size={24} />
-        <span className="bottom-nav-label">Settings</span>
       </NavLink>
     </nav>
   );

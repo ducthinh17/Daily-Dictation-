@@ -26,6 +26,7 @@ import { RankBadge } from '../components/RankBadge';
 import { getRankForLevel, getNextLevelProgress } from '../utils/rankSystem';
 import { QuickPracticeWidget } from '../components/QuickPracticeWidget';
 import { ErrorInsightsCard } from '../components/ErrorInsightsCard';
+import { DailyGoalsWidget } from '../components/DailyGoalsWidget';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -262,6 +263,9 @@ export default function DashboardPage() {
         <div className={styles.sideColumn}>
           {/* Error Insights */}
           <ErrorInsightsCard compact />
+
+          {/* Daily Goals */}
+          <DailyGoalsWidget />
 
           {/* Top Difficult Words */}
           <div className={styles.widget}>

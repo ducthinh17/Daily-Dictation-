@@ -6,7 +6,11 @@ import { db } from '../db';
 import { useSegmentAudio } from '../hooks/useSegmentAudio';
 import './BookmarksPage.css';
 
-export function BookmarksPage() {
+interface BookmarksPageProps {
+  embedded?: boolean;
+}
+
+export function BookmarksPage({ embedded = false }: BookmarksPageProps) {
   const navigate = useNavigate();
   const topics = useLiveQuery(() => db.bookmarkTopics.toArray()) || [];
   const bookmarks = useLiveQuery(() => db.audioBookmarks.orderBy('createdAt').reverse().toArray()) || [];
@@ -62,14 +66,16 @@ export function BookmarksPage() {
   };
 
   return (
-    <div className="bookmarks-page page-container">
-      <header className="bp-header">
-        <div className="header-title">
-          <Star size={36} className="header-icon" fill="var(--color-warning)" color="var(--color-warning)" />
-          <h1>Starred Sentences</h1>
-        </div>
-        <span className="bp-count">{bookmarks.length} starred</span>
-      </header>
+    <div className={`bookmarks-page ${!embedded ? 'page-container' : ''}`}>
+      {!embedded && (
+        <header className="bp-header">
+          <div className="header-title">
+            <Star size={36} className="header-icon" fill="var(--color-warning)" color="var(--color-warning)" />
+            <h1>Starred Sentences</h1>
+          </div>
+          <span className="bp-count">{bookmarks.length} starred</span>
+        </header>
+      )}
 
       <main className="bp-main">
         <div className="bp-sidebar">

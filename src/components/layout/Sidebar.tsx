@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon, Sun, Moon, Star, Target, Activity, BarChart3, Stethoscope } from 'lucide-react';
+import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon, Sun, Moon, BarChart3 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import './Sidebar.css';
 
@@ -18,37 +18,21 @@ export function Sidebar() {
           <LayoutDashboard size={20} />
           <span>Dashboard</span>
         </NavLink>
-        <NavLink to="/reports" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <Activity size={20} />
-          <span>Reports</span>
-        </NavLink>
-        <NavLink to="/analytics" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <BarChart3 size={20} />
-          <span>Analytics</span>
-        </NavLink>
         <NavLink to="/library" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Library size={20} />
           <span>Library</span>
+        </NavLink>
+        <NavLink to="/progress" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <BarChart3 size={20} />
+          <span>Progress</span>
         </NavLink>
         <NavLink to="/review" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Repeat size={20} />
           <span>Review</span>
         </NavLink>
-        <NavLink to="/bookmarks" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <Star size={20} />
-          <span>Starred</span>
-        </NavLink>
-        <NavLink to="/quests" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <Target size={20} />
-          <span>Quests</span>
-        </NavLink>
         <NavLink to="/achievements" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Award size={20} />
           <span>Achievements</span>
-        </NavLink>
-        <NavLink to="/diagnostic" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <Stethoscope size={20} />
-          <span>Diagnostic</span>
         </NavLink>
       </nav>
 
