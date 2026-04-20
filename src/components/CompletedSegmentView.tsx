@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { CheckCircle2, ArrowRight, Volume2, Eye, EyeOff, Target, AlertCircle, Pause } from 'lucide-react';
+import { WordDictionaryPopup, type Position } from './WordDictionaryPopup';
+import { BookmarkButton } from './BookmarkButton';
 import './CompletedSegmentView.css';
 
 interface CompletedSegmentViewProps {
+  lessonId: string;
   segmentIndex: number;
   totalSegments: number;
   segmentText: string;
+  startTime?: number;
+  endTime?: number;
   attempts: number;
   mistakes: number;
   isPlaying: boolean;
@@ -14,9 +19,12 @@ interface CompletedSegmentViewProps {
 }
 
 export function CompletedSegmentView({
+  lessonId,
   segmentIndex,
   totalSegments,
   segmentText,
+  startTime,
+  endTime,
   attempts,
   mistakes,
   isPlaying,
@@ -24,6 +32,20 @@ export function CompletedSegmentView({
   onResume,
 }: CompletedSegmentViewProps) {
   const [textRevealed, setTextRevealed] = useState(false);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [popupPosition, setPopupPosition] = useState<Position | null>(null);
+
+  const handleWordClick = (word: string, e: React.MouseEvent) => {
+    if (!textRevealed) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setPopupPosition({
+      top: rect.top,
+      left: rect.left + rect.width / 2,
+      bottom: rect.bottom
+    });
+    const cleanWord = word.replace(/[^a-zA-Z0-9-']/g, '');
+    setSelectedWord(cleanWord);
+  };
 
   return (
     <div className="completed-segment-view">
@@ -35,6 +57,13 @@ export function CompletedSegmentView({
         </div>
 
         <div className="csv-stats">
+          <BookmarkButton 
+            lessonId={lessonId}
+            segmentIndex={segmentIndex}
+            segmentText={segmentText}
+            startTime={startTime}
+            endTime={endTime}
+          />
           <span className="csv-stat-chip attempts">
             <Target size={12} />
             {attempts} attempt{attempts !== 1 ? 's' : ''}
@@ -86,9 +115,26 @@ export function CompletedSegmentView({
           </button>
         </div>
         <p className={`csv-segment-text${textRevealed ? '' : ' blurred'}`}>
-          {segmentText}
+          {segmentText.split(/\s+/).map((word, idx) => (
+            <span 
+              key={idx} 
+              onClick={(e) => handleWordClick(word, e)}
+              className={textRevealed ? 'clickable-word' : ''}
+              title={textRevealed ? 'Click for dictionary' : ''}
+            >
+              {word}{' '}
+            </span>
+          ))}
         </p>
       </div>
+
+      {selectedWord && (
+        <WordDictionaryPopup
+          word={selectedWord}
+          position={popupPosition}
+          onClose={() => setSelectedWord(null)}
+        />
+      )}
     </div>
   );
 }

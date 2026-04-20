@@ -1,6 +1,7 @@
 import { CheckCircle2, XCircle, Volume2 } from 'lucide-react';
 import { useState } from 'react';
 import type { CheckResult } from '../types';
+import { WordDictionaryPopup, type Position } from './WordDictionaryPopup';
 import './FeedbackDisplay.css';
 
 interface FeedbackDisplayProps {
@@ -11,6 +12,8 @@ interface FeedbackDisplayProps {
 
 export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplayProps) {
   const [accent, setAccent] = useState<'US' | 'UK'>('US');
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [popupPosition, setPopupPosition] = useState<Position | null>(null);
 
   if (!result) return null;
 
@@ -49,6 +52,17 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
                         
       window.speechSynthesis.speak(utterance);
     });
+  };
+
+  const handleWordClick = (word: string, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setPopupPosition({
+      top: rect.top,
+      left: rect.left + rect.width / 2,
+      bottom: rect.bottom
+    });
+    const cleanWord = word.replace(/[^a-zA-Z0-9-']/g, '');
+    setSelectedWord(cleanWord);
   };
 
   if (result.correct) {
@@ -147,8 +161,8 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
                 <span 
                   key={idx} 
                   className="diff-word diff-correct"
-                  onClick={() => playAudio(expectedWord)}
-                  title="Click to hear pronunciation"
+                  onClick={(e) => handleWordClick(expectedWord, e)}
+                  title="Click to see definition"
                   style={{ 
                     cursor: 'pointer', 
                     display: 'inline-flex', 
@@ -161,7 +175,7 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.1)'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  {expectedWord} <Volume2 size={14} style={{ opacity: 0.7 }} />
+                  {expectedWord}
                 </span>
               );
             }
@@ -169,14 +183,20 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
             return (
               <span key={idx} style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
                 {inputWord && (
-                  <span className="diff-word diff-wrong">
+                  <span 
+                    className="diff-word diff-wrong"
+                    onClick={(e) => handleWordClick(expectedWord, e)}
+                    title="Click to see expected word definition"
+                    style={{ cursor: 'pointer' }}
+                  >
                     {inputWord}
                   </span>
                 )}
                 <span 
                   className="diff-word" 
-                  style={{ color: '#9ca3af', letterSpacing: '4px', fontWeight: 'bold' }} 
-                  title={`Missing word (${expectedWord.replace(/[^a-zA-Z0-9]/g, '').length} letters)`}
+                  onClick={(e) => handleWordClick(expectedWord, e)}
+                  style={{ color: '#9ca3af', letterSpacing: '4px', fontWeight: 'bold', cursor: 'pointer' }} 
+                  title={`Missing word: ${expectedWord}`}
                 >
                   {expectedWord.replace(/[^a-zA-Z0-9]/g, '').split('').map(() => '_').join('')}
                 </span>
@@ -192,6 +212,14 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
           )}
         </p>
       </div>
+
+      {selectedWord && (
+        <WordDictionaryPopup
+          word={selectedWord}
+          position={popupPosition}
+          onClose={() => setSelectedWord(null)}
+        />
+      )}
     </div>
   );
 }

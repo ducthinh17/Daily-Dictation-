@@ -399,9 +399,12 @@ export default function PracticePage() {
           {/* ── COMPLETED REVIEW MODE ── */}
           {isViewingCompleted ? (
             <CompletedSegmentView
+              lessonId={lessonId!}
               segmentIndex={viewingCompletedIndex!}
               totalSegments={totalSegments}
               segmentText={displaySegment?.text || ''}
+              startTime={displaySegment?.startTime}
+              endTime={displaySegment?.endTime}
               attempts={progress.attempts[viewingCompletedIndex!] || 0}
               mistakes={progress.mistakes[viewingCompletedIndex!] || 0}
               isPlaying={isPlaying}

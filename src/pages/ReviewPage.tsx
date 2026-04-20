@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Repeat, CheckCircle, AlertTriangle, BookOpen, ArrowRight } from 'lucide-react';
 import { db } from '../db';
+import { WordDictionaryPopup, type Position } from '../components/WordDictionaryPopup';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -11,6 +12,8 @@ import styles from './ReviewPage.module.css';
 export function ReviewPage() {
   const [reviewingWord, setReviewingWord] = useState<string | null>(null);
   const [typedInput, setTypedInput] = useState('');
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [popupPosition, setPopupPosition] = useState<Position | null>(null);
 
   // Fetch all errors
   const allErrors = useLiveQuery(() => db.wordErrors.orderBy('timestamp').reverse().toArray());
@@ -53,6 +56,16 @@ export function ReviewPage() {
       // Shaking animation or error state could be added here
       alert("Incorrect! Keep trying or check the spelling.");
     }
+  };
+
+  const handleWordClick = (word: string, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setPopupPosition({
+      top: rect.top,
+      left: rect.left + rect.width / 2,
+      bottom: rect.bottom
+    });
+    setSelectedWord(word);
   };
 
   return (
@@ -139,7 +152,14 @@ export function ReviewPage() {
                   <Card key={word} variant="default" className={styles.wordCard}>
                     <Card.Body className={styles.wordCardBody}>
                       <div className={styles.wordHeader}>
-                        <h3 className={styles.theWord}>{word}</h3>
+                        <h3 
+                          className={styles.theWord} 
+                          onClick={(e) => handleWordClick(word, e)}
+                          title="Click to see definition"
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {word}
+                        </h3>
                         <Badge variant="danger" size="sm">{data.count} mistakes</Badge>
                       </div>
                       
@@ -174,6 +194,14 @@ export function ReviewPage() {
               </Card>
           </Tabs.Content>
         </Tabs>
+      )}
+
+      {selectedWord && (
+        <WordDictionaryPopup
+          word={selectedWord}
+          position={popupPosition}
+          onClose={() => setSelectedWord(null)}
+        />
       )}
     </div>
   );

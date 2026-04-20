@@ -1,0 +1,298 @@
+.word-dict-popup {
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  max-width: calc(100vw - 20px);
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  animation: popupSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  color: var(--text-primary, #111827);
+}
+
+@media (prefers-color-scheme: dark) {
+  .word-dict-popup {
+    background: var(--bg-secondary, #1e293b);
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@keyframes popupSlideIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.dict-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.dict-close-btn:hover {
+  background: rgba(100, 100, 100, 0.1);
+  color: var(--text-primary);
+}
+
+.dict-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.05));
+}
+
+.dict-word {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: capitalize;
+  padding-right: 24px; /* space for close button */
+}
+
+.dict-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.dict-phonetics {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dict-phonetic-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+
+.accent-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.accent-tag.us {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.accent-tag.uk {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.ipa {
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.audio-btn {
+  background: transparent;
+  border: none;
+  color: var(--primary-color, #6366f1);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.audio-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: scale(1.1);
+}
+
+.fallback-play {
+  background: rgba(99, 102, 241, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  gap: 8px;
+  font-weight: 500;
+  margin-top: 12px;
+}
+
+/* Body */
+.dict-body {
+  padding: 0 20px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.dict-error-state {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.dict-tabs {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+  padding-top: 12px;
+}
+
+.dict-tab {
+  background: transparent;
+  border: none;
+  padding: 6px 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  text-transform: capitalize;
+}
+
+.dict-tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.dict-tab:hover:not(.active) {
+  color: var(--text-primary);
+}
+
+.dict-definitions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.dict-def-item {
+  display: flex;
+  gap: 8px;
+}
+
+.def-number {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.def-content {
+  flex: 1;
+}
+
+.def-text {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.def-example {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.4;
+  border-left: 2px solid var(--border-color);
+  padding-left: 8px;
+}
+
+.dict-synonyms {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.syn-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.syn-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.syn-tag {
+  font-size: 0.75rem;
+  background: rgba(100, 100, 100, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+}
+
+.dict-footer {
+  padding: 8px 20px;
+  background: rgba(0,0,0,0.02);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.source-link {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.source-link:hover {
+  text-decoration: underline;
+}
+
+/* Skeleton loader */
+.dict-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.skel-line {
+  height: 12px;
+  background: rgba(100,100,100,0.1);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+
+.w-full { width: 100%; }
+.w-3\/4 { width: 75%; }
+.w-1\/2 { width: 50%; }
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

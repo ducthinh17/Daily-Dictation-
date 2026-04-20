@@ -1,0 +1,33 @@
+.bookmark-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.bookmark-btn:hover {
+  background-color: var(--bg-hover);
+  transform: scale(1.1);
+}
+
+.bookmark-btn:active {
+  transform: scale(0.95);
+}
+
+.bookmark-btn.bookmarked {
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+.bookmark-icon {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bookmark-btn.bookmarked .bookmark-icon {
+  transform: scale(1.15);
+}

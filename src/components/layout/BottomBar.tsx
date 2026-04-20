@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon, Bookmark } from 'lucide-react';
 import './BottomBar.css';
 
 export function BottomBar() {
@@ -16,6 +16,10 @@ export function BottomBar() {
       <NavLink to="/review" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
         <Repeat size={24} />
         <span className="bottom-nav-label">Review</span>
+      </NavLink>
+      <NavLink to="/bookmarks" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
+        <Bookmark size={24} />
+        <span className="bottom-nav-label">Bookmarks</span>
       </NavLink>
       <NavLink to="/achievements" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
         <Award size={24} />

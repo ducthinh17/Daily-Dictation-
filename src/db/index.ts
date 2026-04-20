@@ -11,6 +11,9 @@ export class DictinationDB extends Dexie {
   userProfile!: Table<UserProfile, string>;
   achievements!: Table<Achievement, string>;
   settings!: Table<SystemSettings, string>;
+  dictionaryCache!: Table<{word: string, cachedAt: number, data: any}, string>;
+  audioBookmarks!: Table<import('../types').AudioBookmark, string>;
+  bookmarkTopics!: Table<import('../types').BookmarkTopic, string>;
 
   constructor() {
     super('DictinationDB');
@@ -127,6 +130,30 @@ export class DictinationDB extends Dexie {
         transcribeEngine: oldEngine,
         playbackRate: oldRate
       }).catch(e => console.log('Settings already exists', e));
+    });
+
+    // Version 7: Dictionary Cache and Bookmarks
+    this.version(7).stores({
+      collections: 'id, category, createdAt',
+      lessons: 'id, collectionId, order, createdAt',
+      segments: 'id, lessonId, index',
+      progress: 'lessonId, lastActiveAt',
+      sessions: 'id, lessonId, startedAt',
+      wordErrors: 'id, word, lessonId, timestamp',
+      userProfile: 'id',
+      achievements: 'id, badgeId, unlockedAt',
+      settings: 'id',
+      dictionaryCache: 'word, cachedAt',
+      audioBookmarks: 'id, lessonId, segmentIndex, createdAt, *topicTags',
+      bookmarkTopics: 'id, name, createdAt'
+    }).upgrade(async tx => {
+      // Initialize default topics
+      await tx.table('bookmarkTopics').bulkAdd([
+        { id: 'topic-ielts', name: 'IELTS', color: '#3b82f6', bookmarkCount: 0, createdAt: Date.now() },
+        { id: 'topic-business', name: 'Business', color: '#10b981', bookmarkCount: 0, createdAt: Date.now() },
+        { id: 'topic-daily', name: 'Daily Life', color: '#f59e0b', bookmarkCount: 0, createdAt: Date.now() },
+        { id: 'topic-custom', name: 'Custom', color: '#8b5cf6', bookmarkCount: 0, createdAt: Date.now() }
+      ]).catch(e => console.log('Default topics already exist', e));
     });
 
     // Handle fresh install population

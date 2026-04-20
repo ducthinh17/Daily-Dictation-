@@ -101,3 +101,26 @@ export interface SystemSettings {
   transcribeEngine: 'groq' | 'browser';
   playbackRate: number;
 }
+
+export interface AudioBookmark {
+  id: string;
+  lessonId: string;
+  segmentIndex: number;
+  segmentText: string;
+  customName?: string;
+  topicTags: string[];
+  startTime?: number;
+  endTime?: number;
+  createdAt: number;
+  lastReviewedAt?: number;
+  reviewCount: number;
+}
+
+export interface BookmarkTopic {
+  id: string;
+  name: string;
+  color: string;
+  icon?: string;
+  bookmarkCount: number;
+  createdAt: number;
+}

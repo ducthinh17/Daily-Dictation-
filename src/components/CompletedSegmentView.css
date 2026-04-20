@@ -208,3 +208,13 @@
   opacity: 0.5;
   user-select: none;
 }
+
+.clickable-word {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.clickable-word:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
