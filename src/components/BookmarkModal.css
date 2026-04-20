@@ -78,7 +78,9 @@
 }
 
 .bm-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-secondary);
@@ -102,6 +104,7 @@
   color: var(--text-primary);
   font-size: 1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
 }
 
 .bm-input:focus {
@@ -110,10 +113,47 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+/* Preset label quick-add chips */
+.bm-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.bm-preset-chip {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px dashed;
+  background-color: transparent;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.7;
+}
+.bm-preset-chip:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+  background-color: rgba(0,0,0,0.03);
+}
+
 .bm-topics {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.bm-btn.primary {
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .bm-topic-chip {

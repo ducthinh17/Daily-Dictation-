@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon, Sun, Moon, Bookmark, Target, Activity, BarChart3, Stethoscope } from 'lucide-react';
+import { LayoutDashboard, Library, Repeat, Award, Settings as SettingsIcon, Sun, Moon, Star, Target, Activity, BarChart3, Stethoscope } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import './Sidebar.css';
 
@@ -35,8 +35,8 @@ export function Sidebar() {
           <span>Review</span>
         </NavLink>
         <NavLink to="/bookmarks" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <Bookmark size={20} />
-          <span>Bookmarks</span>
+          <Star size={20} />
+          <span>Starred</span>
         </NavLink>
         <NavLink to="/quests" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Target size={20} />

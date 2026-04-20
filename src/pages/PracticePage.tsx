@@ -21,6 +21,7 @@ import { CompletedSegmentView } from '../components/CompletedSegmentView';
 import { SegmentNavBar } from '../components/SegmentNavBar';
 import { ShadowingMode } from '../components/ShadowingMode';
 import { SentenceScramble } from '../components/SentenceScramble';
+import { SpeakBackMode } from '../components/SpeakBackMode';
 import { GrammarTipPopup } from '../components/GrammarTipPopup';
 import { findTipForError } from '../utils/grammarTips';
 import type { GrammarTip } from '../utils/grammarTips';
@@ -65,7 +66,7 @@ export default function PracticePage() {
   const [viewingCompletedIndex, setViewingCompletedIndex] = useState<number | null>(null);
 
   // Shadowing & Scramble Mode State
-  const [practiceMode, setPracticeMode] = useState<'dictation' | 'shadowing' | 'scramble'>('dictation');
+  const [practiceMode, setPracticeMode] = useState<'dictation' | 'shadowing' | 'scramble' | 'speak-back'>('dictation');
   const [shadowingScore, setShadowingScore] = useState<number | null>(null);
   const [isShadowingComplete, setIsShadowingComplete] = useState(false);
 
@@ -429,7 +430,7 @@ export default function PracticePage() {
                 className="practice-mode-badge" 
                 onClick={() => {
                   if (!isViewingCompleted) {
-                    setPracticeMode(prev => prev === 'dictation' ? 'shadowing' : prev === 'shadowing' ? 'scramble' : 'dictation');
+                    setPracticeMode(prev => prev === 'dictation' ? 'shadowing' : prev === 'shadowing' ? 'scramble' : prev === 'scramble' ? 'speak-back' : 'dictation');
                     setShadowingScore(null);
                     setIsShadowingComplete(false);
                   }
@@ -438,7 +439,7 @@ export default function PracticePage() {
                 title={!isViewingCompleted ? 'Click to toggle mode' : ''}
               >
                 <LayoutDashboard size={12} />
-                <span>{isViewingCompleted ? 'Review Mode' : practiceMode === 'dictation' ? 'Dictation Mode' : practiceMode === 'shadowing' ? 'Shadowing Mode' : 'Scramble Mode'}</span>
+                <span>{isViewingCompleted ? 'Review Mode' : practiceMode === 'dictation' ? 'Dictation Mode' : practiceMode === 'shadowing' ? 'Shadowing Mode' : practiceMode === 'scramble' ? 'Scramble Mode' : '🎤 Speak Back'}</span>
               </div>
           </div>
 
@@ -546,6 +547,33 @@ export default function PracticePage() {
                 // If they skip, mark as incorrect
                 recordAttempt(currentIndex, false);
                 advanceSegment(currentIndex + 1);
+              }}
+            />
+          ) : practiceMode === 'speak-back' ? (
+            <SpeakBackMode
+              expectedText={currentSegment?.text || ''}
+              language={lesson?.language || 'en'}
+              onReplayAudio={() => {
+                if (currentSegment?.startTime != null && currentSegment?.endTime != null) {
+                  replaySegment(currentSegment.startTime, currentSegment.endTime);
+                } else {
+                  replay();
+                }
+              }}
+              onComplete={async (accuracy) => {
+                setShadowingScore(accuracy);
+                setIsShadowingComplete(true);
+                
+                await awardXP({
+                  type: 'speak_back',
+                  metadata: { accuracy }
+                });
+
+                await updateGoalProgress('shadowing', 1);
+
+                if (accuracy >= 70) {
+                  await recordAttempt(currentIndex, true);
+                }
               }}
             />
           ) : (

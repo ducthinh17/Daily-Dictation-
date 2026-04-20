@@ -9,19 +9,21 @@
   justify-content: center;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  position: relative;
 }
 
 .bookmark-btn:hover {
-  background-color: var(--bg-hover);
-  transform: scale(1.1);
+  background-color: rgba(245, 158, 11, 0.08);
+  transform: scale(1.15);
 }
 
 .bookmark-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 .bookmark-btn.bookmarked {
-  background-color: rgba(245, 158, 11, 0.1);
+  background-color: rgba(245, 158, 11, 0.12);
+  animation: star-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .bookmark-icon {
@@ -29,5 +31,33 @@
 }
 
 .bookmark-btn.bookmarked .bookmark-icon {
-  transform: scale(1.15);
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.5));
+}
+
+@keyframes star-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.4); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Star label hint text */
+.bookmark-btn .star-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: var(--bg-card);
+  border-radius: 4px;
+  padding: 0 3px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.bookmark-btn.bookmarked .star-label {
+  opacity: 1;
+  color: var(--color-warning);
 }

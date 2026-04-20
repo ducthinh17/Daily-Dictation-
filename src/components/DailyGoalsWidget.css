@@ -1,0 +1,104 @@
+.daily-goals-widget {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.dgw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.dgw-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dgw-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.dgw-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dgw-completed {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dgw-xp {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.dgw-goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dgw-goal-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-body);
+  transition: all 0.2s;
+}
+
+.dgw-goal-item:hover {
+  background: var(--bg-hover);
+}
+
+.dgw-goal-item.completed {
+  opacity: 0.65;
+}
+
+.dgw-goal-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dgw-goal-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dgw-goal-reward {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.dgw-checkmark {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #10b981;
+}

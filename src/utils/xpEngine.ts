@@ -6,6 +6,7 @@ export interface XPEvent {
     | 'segment_complete' 
     | 'lesson_complete' 
     | 'shadowing' 
+    | 'speak_back'
     | 'streak' 
     | 'review_word' 
     | 'daily_goal' 
@@ -52,6 +53,16 @@ export function calculateXP(event: XPEvent): number {
 
     case 'sentence_scramble':
       baseXP = 15;
+      break;
+
+    case 'speak_back':
+      baseXP = 20;
+      if (event.metadata?.accuracy && event.metadata.accuracy >= 90) {
+        multiplier = 1.75; // Bonus for excellent pronunciation
+      } else if (event.metadata?.accuracy && event.metadata.accuracy >= 70) {
+        multiplier = 1.3;
+      }
+      if (event.metadata?.isFirstTry) baseXP += 10;
       break;
 
     case 'streak':

@@ -10,9 +10,13 @@ interface AudioUploaderProps {
 export function AudioUploader({ onFileSelect, selectedFileName }: AudioUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isValidAudio = (file: File) => {
+    return file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|m4a|m4b|aac|ogg)$/i);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('audio/')) {
+    if (file && isValidAudio(file)) {
       onFileSelect(file);
     }
   };
@@ -20,7 +24,7 @@ export function AudioUploader({ onFileSelect, selectedFileName }: AudioUploaderP
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('audio/')) {
+    if (file && isValidAudio(file)) {
       onFileSelect(file);
     }
   }, [onFileSelect]);
@@ -38,7 +42,7 @@ export function AudioUploader({ onFileSelect, selectedFileName }: AudioUploaderP
     >
       <input 
         type="file" 
-        accept="audio/*" 
+        accept="audio/*,.mp3,.wav,.m4a,.m4b,.aac,.ogg" 
         ref={fileInputRef} 
         onChange={handleFileChange} 
         style={{ display: 'none' }} 

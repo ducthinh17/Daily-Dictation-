@@ -93,7 +93,7 @@ export function LibraryPage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".dictination,.zip"
+            accept=".dictination,.zip,application/zip,application/x-zip-compressed,*/*"
             onChange={handleImport}
             style={{ display: 'none' }}
           />
