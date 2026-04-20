@@ -1,4 +1,4 @@
-import type { SupportedLanguage } from './settingsStore';
+import type { SupportedLanguage } from '../types';
 
 // --- Groq Whisper Response Types ---
 export interface WhisperWord {

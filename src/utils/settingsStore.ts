@@ -1,56 +1,62 @@
-const KEYS = {
-  GROQ_API_KEY: 'dictination_groq_api_key',
-  DEFAULT_LANGUAGE: 'dictination_default_language',
-  TRANSCRIBE_ENGINE: 'dictination_transcribe_engine',
-  PLAYBACK_RATE: 'dictination_playback_rate',
-} as const;
+import { db } from '../db';
+import type { SupportedLanguage } from '../types';
 
-export type SupportedLanguage = 'en' | 'zh';
 export type TranscribeEngine = 'groq' | 'browser';
 
-// --- Groq API Key ---
-export function getGroqApiKey(): string {
-  return localStorage.getItem(KEYS.GROQ_API_KEY) || '';
+// Default values
+export const DEFAULT_SETTINGS = {
+  groqApiKey: '',
+  defaultLanguage: 'en' as SupportedLanguage,
+  transcribeEngine: 'groq' as TranscribeEngine,
+  playbackRate: 1
+};
+
+// --- Dexie Async Getters & Setters ---
+
+export async function getSettings() {
+  const settings = await db.settings.get('global');
+  return settings || DEFAULT_SETTINGS;
 }
 
-export function setGroqApiKey(key: string): void {
-  localStorage.setItem(KEYS.GROQ_API_KEY, key.trim());
+export async function getGroqApiKey(): Promise<string> {
+  const settings = await getSettings();
+  return settings.groqApiKey;
 }
 
-export function hasGroqApiKey(): boolean {
-  return getGroqApiKey().length > 0;
+export async function setGroqApiKey(key: string): Promise<void> {
+  await db.settings.update('global', { groqApiKey: key.trim() });
 }
 
-// --- Default Language ---
-export function getDefaultLanguage(): SupportedLanguage {
-  const lang = localStorage.getItem(KEYS.DEFAULT_LANGUAGE);
-  if (lang === 'zh') return 'zh';
-  return 'en';
+export async function hasGroqApiKey(): Promise<boolean> {
+  const key = await getGroqApiKey();
+  return key.length > 0;
 }
 
-export function setDefaultLanguage(lang: SupportedLanguage): void {
-  localStorage.setItem(KEYS.DEFAULT_LANGUAGE, lang);
+export async function getDefaultLanguage(): Promise<SupportedLanguage> {
+  const settings = await getSettings();
+  return settings.defaultLanguage;
 }
 
-// --- Transcribe Engine ---
-export function getTranscribeEngine(): TranscribeEngine {
-  const engine = localStorage.getItem(KEYS.TRANSCRIBE_ENGINE);
-  if (engine === 'browser') return 'browser';
-  return 'groq';
+export async function setDefaultLanguage(lang: SupportedLanguage): Promise<void> {
+  await db.settings.update('global', { defaultLanguage: lang });
 }
 
-export function setTranscribeEngine(engine: TranscribeEngine): void {
-  localStorage.setItem(KEYS.TRANSCRIBE_ENGINE, engine);
+export async function getTranscribeEngine(): Promise<TranscribeEngine> {
+  const settings = await getSettings();
+  return settings.transcribeEngine;
 }
 
-// --- Playback Rate ---
-export function getPlaybackRate(): number {
-  const rate = localStorage.getItem(KEYS.PLAYBACK_RATE);
-  return rate ? parseFloat(rate) : 1;
+export async function setTranscribeEngine(engine: TranscribeEngine): Promise<void> {
+  await db.settings.update('global', { transcribeEngine: engine });
 }
 
-export function setPlaybackRate(rate: number): void {
-  localStorage.setItem(KEYS.PLAYBACK_RATE, rate.toString());
+export async function getPlaybackRate(): Promise<number> {
+  const settings = await getSettings();
+  return settings.playbackRate;
+}
+
+export async function setPlaybackRate(rate: number): Promise<void> {
+  await db.settings.update('global', { playbackRate: rate });
 }
 
 // --- Validate Groq API Key ---

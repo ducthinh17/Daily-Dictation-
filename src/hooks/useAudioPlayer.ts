@@ -1,26 +1,41 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { getPlaybackRate, setPlaybackRate as persistPlaybackRate } from '../utils/settingsStore';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
+import { setPlaybackRate as persistPlaybackRate, DEFAULT_SETTINGS } from '../utils/settingsStore';
 
 interface UseAudioPlayerProps {
   audioBlob?: Blob;
 }
 
 export function useAudioPlayer({ audioBlob }: UseAudioPlayerProps) {
+  const settings = useLiveQuery(() => db.settings.get('global'));
+  const dbRate = settings?.playbackRate || DEFAULT_SETTINGS.playbackRate;
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(getPlaybackRate());
+  const [playbackRate, setPlaybackRate] = useState(dbRate);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const endTimeRef = useRef<number | null>(null);
+
+  // Sync local state when db setting changes
+  useEffect(() => {
+    if (settings) {
+      setPlaybackRate(settings.playbackRate);
+      if (audioRef.current) {
+        audioRef.current.playbackRate = settings.playbackRate;
+      }
+    }
+  }, [settings?.playbackRate]);
 
   useEffect(() => {
     if (audioBlob) {
       const url = URL.createObjectURL(audioBlob);
       objectUrlRef.current = url;
       const audio = new Audio(url);
-      audio.playbackRate = getPlaybackRate();
+      audio.playbackRate = playbackRate;
       audioRef.current = audio;
 
       const setAudioData = () => {

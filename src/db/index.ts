@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Lesson, Segment, Progress, Collection, PracticeSession, WordError, UserProfile, Achievement } from '../types';
+import type { Lesson, Segment, Progress, Collection, PracticeSession, WordError, UserProfile, Achievement, SystemSettings } from '../types';
 
 export class DictinationDB extends Dexie {
   collections!: Table<Collection, string>;
@@ -10,6 +10,7 @@ export class DictinationDB extends Dexie {
   wordErrors!: Table<WordError, string>;
   userProfile!: Table<UserProfile, string>;
   achievements!: Table<Achievement, string>;
+  settings!: Table<SystemSettings, string>;
 
   constructor() {
     super('DictinationDB');
@@ -101,6 +102,33 @@ export class DictinationDB extends Dexie {
       }).catch(e => console.log('Profile already exists', e));
     });
 
+    // Version 6: Settings
+    this.version(6).stores({
+      collections: 'id, category, createdAt',
+      lessons: 'id, collectionId, order, createdAt',
+      segments: 'id, lessonId, index',
+      progress: 'lessonId, lastActiveAt',
+      sessions: 'id, lessonId, startedAt',
+      wordErrors: 'id, word, lessonId, timestamp',
+      userProfile: 'id',
+      achievements: 'id, badgeId, unlockedAt',
+      settings: 'id'
+    }).upgrade(async tx => {
+      // Initialize default settings, migrating from localStorage if exists
+      const oldApiKey = localStorage.getItem('dictination_groq_api_key') || '';
+      const oldLang = localStorage.getItem('dictination_default_language') === 'zh' ? 'zh' : 'en';
+      const oldEngine = localStorage.getItem('dictination_transcribe_engine') === 'browser' ? 'browser' : 'groq';
+      const oldRate = parseFloat(localStorage.getItem('dictination_playback_rate') || '1');
+
+      await tx.table('settings').add({
+        id: 'global',
+        groqApiKey: oldApiKey,
+        defaultLanguage: oldLang,
+        transcribeEngine: oldEngine,
+        playbackRate: oldRate
+      }).catch(e => console.log('Settings already exists', e));
+    });
+
     // Handle fresh install population
     this.on('populate', async () => {
       await this.userProfile.add({
@@ -110,6 +138,13 @@ export class DictinationDB extends Dexie {
         title: 'Novice Listener',
         createdAt: Date.now(),
         lastUpdated: Date.now()
+      });
+      await this.settings.add({
+        id: 'global',
+        groqApiKey: '',
+        defaultLanguage: 'en',
+        transcribeEngine: 'groq',
+        playbackRate: 1
       });
     });
   }

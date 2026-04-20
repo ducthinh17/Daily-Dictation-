@@ -19,16 +19,16 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
 
   useEffect(() => {
     if (isOpen) {
-      setApiKeyLocal(getGroqApiKey());
-      setLanguageLocal(getDefaultLanguage());
+      getGroqApiKey().then(setApiKeyLocal);
+      getDefaultLanguage().then(setLanguageLocal);
       setTestStatus('idle');
       setTestError('');
     }
   }, [isOpen]);
 
-  const handleSave = () => {
-    setGroqApiKey(apiKey);
-    setDefaultLanguage(language);
+  const handleSave = async () => {
+    await setGroqApiKey(apiKey);
+    await setDefaultLanguage(language);
     onClose();
   };
 

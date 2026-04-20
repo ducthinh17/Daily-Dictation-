@@ -15,15 +15,15 @@ export function SettingsPage() {
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    setApiKeyLocal(getGroqApiKey());
-    setLanguageLocal(getDefaultLanguage());
+    getGroqApiKey().then(setApiKeyLocal);
+    getDefaultLanguage().then(setLanguageLocal);
     setTestStatus('idle');
     setTestError('');
   }, []);
 
-  const handleSave = () => {
-    setGroqApiKey(apiKey);
-    setDefaultLanguage(language);
+  const handleSave = async () => {
+    await setGroqApiKey(apiKey);
+    await setDefaultLanguage(language);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };

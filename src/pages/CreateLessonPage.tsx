@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, Mic, FileText, Settings as SettingsIcon } from 'lucide-react';
@@ -13,7 +13,6 @@ import { splitScript, splitTranscript } from '../utils/segmentSplitter';
 import type { SegmentWithTime } from '../utils/segmentSplitter';
 import { transcribeAudio } from '../utils/transcriber';
 import type { TranscribeStatus, TranscriptResult } from '../utils/transcriber';
-import { getGroqApiKey, getDefaultLanguage, hasGroqApiKey } from '../utils/settingsStore';
 import { useLesson } from '../hooks/useLesson';
 import { db } from '../db';
 import type { SupportedLanguage } from '../types';
@@ -25,6 +24,8 @@ export default function CreateLessonPage() {
   const navigate = useNavigate();
   const { createLesson } = useLesson();
 
+  const settings = useLiveQuery(() => db.settings.get('global'));
+
   // Tab state
   const [activeTab, setActiveTab] = useState<TabMode>('audio-only');
 
@@ -35,7 +36,14 @@ export default function CreateLessonPage() {
   const [showSettings, setShowSettings] = useState(false);
 
   // Audio-Only tab state
-  const [language, setLanguage] = useState<SupportedLanguage>(getDefaultLanguage());
+  const [language, setLanguage] = useState<SupportedLanguage>('en');
+  
+  useEffect(() => {
+    if (settings?.defaultLanguage) {
+      setLanguage(settings.defaultLanguage);
+    }
+  }, [settings?.defaultLanguage]);
+
   const [transcribeStatus, setTranscribeStatus] = useState<TranscribeStatus | null>(null);
   const [transcriptResult, setTranscriptResult] = useState<TranscriptResult | null>(null);
   const [editedScript, setEditedScript] = useState('');
@@ -54,11 +62,13 @@ export default function CreateLessonPage() {
 
   const collections = useLiveQuery(() => db.collections.orderBy('createdAt').reverse().toArray()) || [];
 
+  const hasGroqApiKey = !!settings?.groqApiKey?.trim();
+
   // --- Audio-Only handlers ---
   const handleTranscribe = async () => {
     if (!audioFile) return;
 
-    const apiKey = getGroqApiKey();
+    const apiKey = settings?.groqApiKey;
     if (!apiKey) {
       setShowSettings(true);
       return;
@@ -300,7 +310,7 @@ export default function CreateLessonPage() {
             </div>
 
             <div className="form-group">
-              {!hasGroqApiKey() && (
+              {!hasGroqApiKey && (
                 <div className="api-key-notice">
                   <p>
                     You need a <strong>free Groq API key</strong> to use auto transcription.
@@ -313,7 +323,7 @@ export default function CreateLessonPage() {
               <TranscribeButton
                 status={transcribeStatus}
                 onClick={handleTranscribe}
-                disabled={!audioFile || !hasGroqApiKey()}
+                disabled={!audioFile || !hasGroqApiKey}
               />
             </div>
 

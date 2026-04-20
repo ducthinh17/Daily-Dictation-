@@ -93,3 +93,11 @@ export interface Achievement {
   badgeId: string;
   unlockedAt: number;
 }
+
+export interface SystemSettings {
+  id: string;
+  groqApiKey: string;
+  defaultLanguage: SupportedLanguage;
+  transcribeEngine: 'groq' | 'browser';
+  playbackRate: number;
+}
