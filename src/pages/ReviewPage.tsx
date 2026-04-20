@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Repeat, CheckCircle, AlertTriangle, BookOpen, ArrowRight } from 'lucide-react';
 import { db } from '../db';
+import { awardXP } from '../utils/xpEngine';
+import { updateGoalProgress } from '../utils/questEngine';
 import { WordDictionaryPopup, type Position } from '../components/WordDictionaryPopup';
+import { FlashcardPlayer } from '../components/FlashcardPlayer';
+import { getNewCards } from '../utils/srsEngine';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -14,6 +18,7 @@ export function ReviewPage() {
   const [typedInput, setTypedInput] = useState('');
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [popupPosition, setPopupPosition] = useState<Position | null>(null);
+  const [showFlashcards, setShowFlashcards] = useState(false);
 
   // Fetch all errors
   const allErrors = useLiveQuery(() => db.wordErrors.orderBy('timestamp').reverse().toArray());
@@ -45,6 +50,14 @@ export function ReviewPage() {
     const errorsToDelete = allErrors.filter(e => e.word.toLowerCase() === word.toLowerCase());
     const ids = errorsToDelete.map(e => e.id);
     await db.wordErrors.bulkDelete(ids);
+    
+    // Gamification
+    await awardXP({
+      type: 'review_word',
+      metadata: {}
+    });
+    await updateGoalProgress('review_words', 1);
+
     setReviewingWord(null);
     setTypedInput('');
   };
@@ -131,11 +144,41 @@ export function ReviewPage() {
           </Card.Footer>
         </Card>
       ) : (
-        <Tabs defaultValue="needs-review">
+        <Tabs defaultValue="flashcards">
           <Tabs.List>
-            <Tabs.Trigger value="needs-review" icon={<AlertTriangle size={16} />}>Needs Review</Tabs.Trigger>
+            <Tabs.Trigger value="flashcards" icon={<Repeat size={16} />}>SRS Flashcards</Tabs.Trigger>
+            <Tabs.Trigger value="needs-review" icon={<AlertTriangle size={16} />}>Mistakes Log</Tabs.Trigger>
             <Tabs.Trigger value="mastered" icon={<CheckCircle size={16} />}>Mastered</Tabs.Trigger>
           </Tabs.List>
+
+          <Tabs.Content value="flashcards">
+            {showFlashcards ? (
+              <FlashcardPlayer onComplete={() => setShowFlashcards(false)} />
+            ) : (
+              <Card variant="glass" className={styles.emptyCard}>
+                <Card.Body className={styles.emptyState}>
+                  <Repeat size={48} className={styles.emptyIcon} style={{color: '#3b82f6'}} />
+                  <h3>Daily Flashcards</h3>
+                  <p>Review your mistakes using spaced repetition to move them to your long-term memory.</p>
+                  <Button 
+                    variant="primary" 
+                    onClick={async () => {
+                      // Generate new cards for words in error log
+                      const words = Array.from(errorMap.keys());
+                      const newCards = await getNewCards(words);
+                      if (newCards.length > 0) {
+                        await db.srsCards.bulkAdd(newCards);
+                      }
+                      setShowFlashcards(true);
+                    }} 
+                    style={{ marginTop: '1rem' }}
+                  >
+                    Start Review Session
+                  </Button>
+                </Card.Body>
+              </Card>
+            )}
+          </Tabs.Content>
 
           <Tabs.Content value="needs-review">
             {sortedErrors.length === 0 ? (

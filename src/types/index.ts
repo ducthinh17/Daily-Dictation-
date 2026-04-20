@@ -124,3 +124,50 @@ export interface BookmarkTopic {
   bookmarkCount: number;
   createdAt: number;
 }
+
+// Phase 3 & 4 Types
+export interface XPLog {
+  id: string;
+  type: string;
+  amount: number;
+  metadata?: any;
+  timestamp: number;
+}
+
+export interface DailyGoal {
+  id: string;
+  date: string;
+  type: 'practice_time' | 'complete_segments' | 'shadowing' | 'review_words';
+  target: number;
+  progress: number;
+  isCompleted: boolean;
+  xpReward: number;
+  title: string;
+}
+
+export interface WeeklyQuest {
+  id: string;
+  weekStart: string;
+  type: string;
+  target: number;
+  progress: number;
+  isCompleted: boolean;
+  xpReward: number;
+  title: string;
+}
+
+export interface SRSCard {
+  id: string;
+  word: string;
+  nextReviewAt: number;
+  repetitions: number;
+  easinessFactor: number;
+  interval: number;
+  lastReviewedAt: number;
+}
+
+export interface MasteredWord {
+  id: string;
+  word: string;
+  masteredAt: number;
+}

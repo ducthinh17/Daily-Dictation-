@@ -9,6 +9,7 @@ import { AchievementsPage } from './pages/AchievementsPage';
 import { ReviewPage } from './pages/ReviewPage';
 import { BookmarksPage } from './pages/BookmarksPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { QuestsPage } from './pages/QuestsPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/bookmarks" element={<BookmarksPage />} />
           <Route path="/review" element={<ReviewPage />} />
+          <Route path="/quests" element={<QuestsPage />} />
           <Route path="/collection/:id" element={<CollectionDetailPage />} />
           <Route path="/create" element={<CreateLessonPage />} />
           <Route path="/practice/:lessonId" element={<PracticePage />} />

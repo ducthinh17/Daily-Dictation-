@@ -6,6 +6,8 @@ import { db } from '../db';
 import { useProgress } from '../hooks/useProgress';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { checkAnswer } from '../utils/answerChecker';
+import { awardXP } from '../utils/xpEngine';
+import { updateGoalProgress } from '../utils/questEngine';
 import type { CheckResult } from '../types';
 
 import { ProgressBar } from '../components/ui/ProgressBar';
@@ -189,7 +191,23 @@ export default function PracticePage() {
     const result = checkAnswer(draftInput, currentSegment.text);
     setCheckResult(result);
 
+    const isFirstTry = progress && !progress.attempts[currentIndex];
+    
     await recordAttempt(currentIndex, result.correct);
+
+    if (result.correct) {
+      // Award XP for dictation segment
+      await awardXP({
+        type: 'segment_complete',
+        metadata: {
+          isFirstTry,
+          perfect: result.wrongPositions && result.wrongPositions.length === 0
+        }
+      });
+      
+      // Update daily goal
+      await updateGoalProgress('complete_segments', 1);
+    }
 
     if (!result.correct && result.wrongPositions && result.wrongPositions.length > 0) {
       const expectedWords = currentSegment.text.trim().split(/\s+/);
@@ -220,6 +238,12 @@ export default function PracticePage() {
           if (progress && lessonId) {
             const attemptsCount = Object.values(progress.attempts).reduce((a, b) => a + b, 0) + 1;
             const accuracy = Math.round((totalSegments / attemptsCount) * 100);
+            
+            await awardXP({
+              type: 'lesson_complete',
+              metadata: { accuracy }
+            });
+            
             await db.sessions.add({
               id: crypto.randomUUID(),
               lessonId,
@@ -456,6 +480,15 @@ export default function PracticePage() {
               onComplete={async (accuracy) => {
                 setShadowingScore(accuracy);
                 setIsShadowingComplete(true);
+                
+                await awardXP({
+                  type: 'shadowing',
+                  metadata: { accuracy }
+                });
+
+                // Update daily goal
+                await updateGoalProgress('shadowing', 1);
+
                 // Optionally auto-complete if accuracy is very high
                 if (accuracy >= 80) {
                   await recordAttempt(currentIndex, true);

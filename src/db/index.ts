@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Lesson, Segment, Progress, Collection, PracticeSession, WordError, UserProfile, Achievement, SystemSettings } from '../types';
+import type { Lesson, Segment, Progress, Collection, PracticeSession, WordError, UserProfile, Achievement, SystemSettings, XPLog, DailyGoal, WeeklyQuest, SRSCard, MasteredWord } from '../types';
 
 export class DictinationDB extends Dexie {
   collections!: Table<Collection, string>;
@@ -16,11 +16,11 @@ export class DictinationDB extends Dexie {
   bookmarkTopics!: Table<import('../types').BookmarkTopic, string>;
   
   // Phase 3 & 4
-  xpLog!: Table<any, string>;
-  dailyGoals!: Table<any, string>;
-  weeklyQuests!: Table<any, string>;
-  srsCards!: Table<any, string>;
-  masteredWords!: Table<any, string>;
+  xpLog!: Table<XPLog, string>;
+  dailyGoals!: Table<DailyGoal, string>;
+  weeklyQuests!: Table<WeeklyQuest, string>;
+  srsCards!: Table<SRSCard, string>;
+  masteredWords!: Table<MasteredWord, string>;
 
   constructor() {
     super('DictinationDB');

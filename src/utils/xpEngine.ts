@@ -11,13 +11,17 @@ export interface XPEvent {
     | 'daily_goal' 
     | 'weekly_quest' 
     | 'first_daily' 
-    | 'bookmark_review';
+    | 'bookmark_review'
+    | 'achievement_unlocked';
   metadata?: {
     accuracy?: number;
     attempts?: number;
     streakDays?: number;
     perfect?: boolean;
     isFirstTry?: boolean;
+    overrideAmount?: number;
+    achievementId?: string;
+    achievementTitle?: string;
   };
 }
 
@@ -55,11 +59,11 @@ export function calculateXP(event: XPEvent): number {
       break;
 
     case 'daily_goal':
-      baseXP = 30;
+      baseXP = event.metadata?.overrideAmount || 30;
       break;
 
     case 'weekly_quest':
-      baseXP = 100;
+      baseXP = event.metadata?.overrideAmount || 100;
       break;
 
     case 'first_daily':
@@ -68,6 +72,10 @@ export function calculateXP(event: XPEvent): number {
 
     case 'bookmark_review':
       baseXP = 3;
+      break;
+
+    case 'achievement_unlocked':
+      baseXP = event.metadata?.overrideAmount || 100;
       break;
   }
 

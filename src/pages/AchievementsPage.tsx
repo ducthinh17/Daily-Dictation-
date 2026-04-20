@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Trophy, Star, Target, Flame, Zap, Award, CheckCircle } from 'lucide-react';
+import { Trophy, Target, Award, Zap } from 'lucide-react';
 import { db } from '../db';
 import { Tabs } from '../components/ui/Tabs';
 import { Card } from '../components/ui/Card';
@@ -8,14 +8,7 @@ import { Badge } from '../components/ui/Badge';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import styles from './AchievementsPage.module.css';
 
-const ALL_BADGES = [
-  { id: 'first-lesson', title: 'First Step', description: 'Complete your first lesson.', icon: <Target />, color: 'primary', req: 1 },
-  { id: '10-lessons', title: 'Getting Serious', description: 'Complete 10 lessons.', icon: <Star />, color: 'secondary', req: 10 },
-  { id: '50-lessons', title: 'Iron Ear', description: 'Complete 50 lessons.', icon: <Award />, color: 'success', req: 50 },
-  { id: '3-day-streak', title: 'Consistent', description: 'Achieve a 3-day practice streak.', icon: <Flame />, color: 'warning', req: 3 },
-  { id: '7-day-streak', title: 'Relentless', description: 'Achieve a 7-day practice streak.', icon: <Flame />, color: 'danger', req: 7 },
-  { id: '100-accuracy', title: 'Perfectionist', description: 'Achieve 100% accuracy in a session.', icon: <CheckCircle />, color: 'success', req: 1 },
-];
+import { ACHIEVEMENTS } from '../utils/achievementEngine';
 
 export function AchievementsPage() {
 
@@ -116,6 +109,8 @@ export function AchievementsPage() {
 
   const unlockedBadgeIds = new Set(unlockedBadges.map(b => b.badgeId));
 
+  const ALL_BADGES = Object.values(ACHIEVEMENTS).filter(ach => !ach.isHidden || unlockedBadgeIds.has(ach.id));
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -162,14 +157,10 @@ export function AchievementsPage() {
             {ALL_BADGES.map(badge => {
               const isUnlocked = unlockedBadgeIds.has(badge.id);
               
-              // Mocking progress for demonstration, in reality it should query DB
-              let progress = 0;
-              if (badge.id === 'first-lesson') progress = sessions.length >= 1 ? 1 : 0;
-              else if (badge.id === '10-lessons') progress = Math.min(sessions.length, 10);
-              else if (badge.id === '50-lessons') progress = Math.min(sessions.length, 50);
-              else progress = isUnlocked ? badge.req : 0; // fallback
-
-              const percent = (progress / badge.req) * 100;
+              // We could calculate actual progress here, but for now we'll mock it if not unlocked
+              let progress = isUnlocked ? badge.reqAmount : 0;
+              // Add specific progress logic if needed later
+              const percent = (progress / badge.reqAmount) * 100;
 
               return (
                 <Card 
@@ -179,7 +170,7 @@ export function AchievementsPage() {
                 >
                   <Card.Body className={styles.badgeContent}>
                     <div className={`${styles.badgeIconWrapper} ${styles[`badge-${badge.color}`]}`}>
-                      {badge.icon}
+                      <Trophy />
                     </div>
                     <h3 className={styles.badgeTitle}>{badge.title}</h3>
                     <p className={styles.badgeDesc}>{badge.description}</p>
@@ -188,7 +179,7 @@ export function AchievementsPage() {
                       <div className={styles.badgeProgressContainer}>
                         <div className={styles.badgeProgressText}>
                           <span>{progress}</span>
-                          <span>{badge.req}</span>
+                          <span>{badge.reqAmount}</span>
                         </div>
                         <ProgressBar progress={percent} height={6} showPercentage={false} />
                       </div>
