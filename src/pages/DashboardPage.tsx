@@ -24,6 +24,8 @@ import styles from './DashboardPage.module.css';
 import { Button } from '../components/ui/Button';
 import { RankBadge } from '../components/RankBadge';
 import { getRankForLevel, getNextLevelProgress } from '../utils/rankSystem';
+import { QuickPracticeWidget } from '../components/QuickPracticeWidget';
+import { ErrorInsightsCard } from '../components/ErrorInsightsCard';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -232,6 +234,9 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {/* Quick Practice Widget */}
+          <QuickPracticeWidget />
+
           {/* Activity Heatmap */}
           <div className={styles.widget}>
             <div className={styles.widgetHeader}>
@@ -255,6 +260,9 @@ export default function DashboardPage() {
 
         {/* Side Column */}
         <div className={styles.sideColumn}>
+          {/* Error Insights */}
+          <ErrorInsightsCard compact />
+
           {/* Top Difficult Words */}
           <div className={styles.widget}>
             <div className={styles.widgetHeader}>

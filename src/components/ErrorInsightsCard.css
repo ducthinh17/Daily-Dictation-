@@ -1,0 +1,174 @@
+/* ── Error Insights Card ── */
+.ei-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  backdrop-filter: blur(10px);
+}
+
+.ei-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 1rem;
+}
+
+.ei-header-icon { color: #ec4899; }
+
+.ei-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ei-top-section {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.ei-donut { flex-shrink: 0; }
+
+.ei-donut-seg {
+  opacity: 0;
+  animation: ei-segIn 0.5s ease forwards;
+}
+
+@keyframes ei-segIn {
+  from { opacity: 0; stroke-dashoffset: 100; }
+  to   { opacity: 1; stroke-dashoffset: 0; }
+}
+
+.ei-donut-total {
+  font-size: 1.25rem;
+  font-weight: 800;
+  fill: var(--text-primary);
+}
+
+.ei-donut-label {
+  font-size: 0.6rem;
+  fill: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.ei-top-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ei-highlight {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.ei-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ── Categories List ── */
+.ei-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ei-category {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ei-cat-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border-radius: var(--radius-md);
+}
+
+.ei-cat-btn:hover {
+  background: var(--bg-hover);
+}
+
+.ei-cat-left, .ei-cat-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ei-cat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ei-cat-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.ei-cat-count {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ei-cat-pct {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+}
+
+.ei-chevron {
+  transition: transform 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.ei-chevron.open {
+  transform: rotate(90deg);
+}
+
+/* ── Examples ── */
+.ei-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem 0.75rem 2rem;
+  animation: ei-fadeIn 0.2s ease;
+}
+
+@keyframes ei-fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ei-example-tag {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.6rem;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Compact mode ── */
+.ei-compact .ei-top-section { gap: 0.75rem; }
+.ei-compact .ei-highlight { font-size: 0.95rem; }

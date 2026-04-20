@@ -264,3 +264,57 @@
 .doneBtn:hover {
   background: #2563eb;
 }
+
+/* Fill-in-the-Blank Styles */
+.inputWrapper {
+  width: 100%;
+  max-width: 300px;
+  margin: 1rem auto;
+}
+
+.typingInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-body);
+  color: var(--text-primary);
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.typingInput:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.typingResult {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.resultCorrect {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+.resultIncorrect {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.resultIncorrect s {
+  opacity: 0.7;
+}

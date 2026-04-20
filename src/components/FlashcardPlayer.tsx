@@ -12,6 +12,7 @@ export function FlashcardPlayer({ onComplete }: { onComplete: () => void }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [ttsEngine, setTtsEngine] = useState<'groq' | 'browser'>('browser');
+  const [typedAnswer, setTypedAnswer] = useState('');
 
   useEffect(() => {
     async function init() {
@@ -45,6 +46,7 @@ export function FlashcardPlayer({ onComplete }: { onComplete: () => void }) {
     if (currentIndex < cards.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setIsFlipped(false);
+      setTypedAnswer('');
     } else {
       onComplete();
     }
@@ -89,11 +91,26 @@ export function FlashcardPlayer({ onComplete }: { onComplete: () => void }) {
                   <Volume2 size={48} />
                 </button>
               </div>
+              <div className={styles.inputWrapper}>
+                <input
+                  type="text"
+                  value={typedAnswer}
+                  onChange={(e) => setTypedAnswer(e.target.value)}
+                  placeholder="Type the word..."
+                  className={styles.typingInput}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setIsFlipped(true);
+                    }
+                  }}
+                />
+              </div>
               <button 
                 className={styles.flipBtn} 
                 onClick={() => setIsFlipped(true)}
               >
-                Show Answer
+                {typedAnswer.trim() ? 'Check Answer' : 'Skip & Show Answer'}
               </button>
             </Card.Body>
           </Card>
@@ -101,6 +118,15 @@ export function FlashcardPlayer({ onComplete }: { onComplete: () => void }) {
           {/* Back of card */}
           <Card className={styles.cardBack}>
             <Card.Body className={styles.cardBody}>
+              {typedAnswer.trim() && (
+                <div className={styles.typingResult}>
+                  {typedAnswer.toLowerCase().trim() === currentCard.word.toLowerCase().trim() ? (
+                    <div className={styles.resultCorrect}><Check size={16} /> Correct Spelling</div>
+                  ) : (
+                    <div className={styles.resultIncorrect}>You typed: <s>{typedAnswer}</s></div>
+                  )}
+                </div>
+              )}
               <h2 className={styles.wordReveal}>{currentCard.word}</h2>
               
               <div className={styles.actions}>

@@ -12,7 +12,8 @@ export interface XPEvent {
     | 'weekly_quest' 
     | 'first_daily' 
     | 'bookmark_review'
-    | 'achievement_unlocked';
+    | 'achievement_unlocked'
+    | 'sentence_scramble';
   metadata?: {
     accuracy?: number;
     attempts?: number;
@@ -22,6 +23,7 @@ export interface XPEvent {
     overrideAmount?: number;
     achievementId?: string;
     achievementTitle?: string;
+    segmentId?: string | number;
   };
 }
 
@@ -46,6 +48,10 @@ export function calculateXP(event: XPEvent): number {
       } else if (event.metadata?.accuracy && event.metadata.accuracy >= 70) {
         baseXP = 8;
       }
+      break;
+
+    case 'sentence_scramble':
+      baseXP = 15;
       break;
 
     case 'streak':

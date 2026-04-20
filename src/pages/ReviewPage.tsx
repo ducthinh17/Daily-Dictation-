@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Repeat, CheckCircle, AlertTriangle, BookOpen, ArrowRight } from 'lucide-react';
+import { Repeat, CheckCircle, AlertTriangle, BookOpen, ArrowRight, PieChart } from 'lucide-react';
 import { db } from '../db';
 import { awardXP } from '../utils/xpEngine';
 import { updateGoalProgress } from '../utils/questEngine';
@@ -11,6 +11,7 @@ import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Tabs } from '../components/ui/Tabs';
+import { ErrorInsightsCard } from '../components/ErrorInsightsCard';
 import styles from './ReviewPage.module.css';
 
 export function ReviewPage() {
@@ -147,6 +148,7 @@ export function ReviewPage() {
         <Tabs defaultValue="flashcards">
           <Tabs.List>
             <Tabs.Trigger value="flashcards" icon={<Repeat size={16} />}>SRS Flashcards</Tabs.Trigger>
+            <Tabs.Trigger value="error-insights" icon={<PieChart size={16} />}>Error Insights</Tabs.Trigger>
             <Tabs.Trigger value="needs-review" icon={<AlertTriangle size={16} />}>Mistakes Log</Tabs.Trigger>
             <Tabs.Trigger value="mastered" icon={<CheckCircle size={16} />}>Mastered</Tabs.Trigger>
           </Tabs.List>
@@ -178,6 +180,10 @@ export function ReviewPage() {
                 </Card.Body>
               </Card>
             )}
+          </Tabs.Content>
+
+          <Tabs.Content value="error-insights">
+            <ErrorInsightsCard />
           </Tabs.Content>
 
           <Tabs.Content value="needs-review">

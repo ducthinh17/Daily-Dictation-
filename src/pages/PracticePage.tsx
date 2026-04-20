@@ -20,6 +20,10 @@ import { Button } from '../components/ui/Button';
 import { CompletedSegmentView } from '../components/CompletedSegmentView';
 import { SegmentNavBar } from '../components/SegmentNavBar';
 import { ShadowingMode } from '../components/ShadowingMode';
+import { SentenceScramble } from '../components/SentenceScramble';
+import { GrammarTipPopup } from '../components/GrammarTipPopup';
+import { findTipForError } from '../utils/grammarTips';
+import type { GrammarTip } from '../utils/grammarTips';
 import './PracticePage.css';
 
 export default function PracticePage() {
@@ -60,10 +64,13 @@ export default function PracticePage() {
   // ── NEW: which completed segment are we previewing? null = active practice mode
   const [viewingCompletedIndex, setViewingCompletedIndex] = useState<number | null>(null);
 
-  // Shadowing Mode State
-  const [practiceMode, setPracticeMode] = useState<'dictation' | 'shadowing'>('dictation');
+  // Shadowing & Scramble Mode State
+  const [practiceMode, setPracticeMode] = useState<'dictation' | 'shadowing' | 'scramble'>('dictation');
   const [shadowingScore, setShadowingScore] = useState<number | null>(null);
   const [isShadowingComplete, setIsShadowingComplete] = useState(false);
+
+  // Grammar Tip State
+  const [grammarTip, setGrammarTip] = useState<GrammarTip | null>(null);
 
   const currentIndex = progress?.currentSegmentIndex || 0;
   const totalSegments = segments?.length || 0;
@@ -224,6 +231,13 @@ export default function PracticePage() {
 
       if (errors.length > 0) {
         await db.wordErrors.bulkAdd(errors);
+
+        // Show grammar tip for the first error
+        const firstErr = errors[0];
+        if (firstErr) {
+          const tip = findTipForError(firstErr.expectedWord, firstErr.typedWord);
+          if (tip) setGrammarTip(tip);
+        }
       }
     }
 
@@ -391,21 +405,21 @@ export default function PracticePage() {
                 <span>Segment {currentIndex + 1} of {totalSegments}</span>
               </div>
             )}
-            <div 
-              className="practice-mode-badge" 
-              onClick={() => {
-                if (!isViewingCompleted) {
-                  setPracticeMode(prev => prev === 'dictation' ? 'shadowing' : 'dictation');
-                  setShadowingScore(null);
-                  setIsShadowingComplete(false);
-                }
-              }}
-              style={{ cursor: isViewingCompleted ? 'default' : 'pointer' }}
-              title={!isViewingCompleted ? 'Click to toggle mode' : ''}
-            >
-              <LayoutDashboard size={12} />
-              <span>{isViewingCompleted ? 'Review Mode' : practiceMode === 'dictation' ? 'Dictation Mode' : 'Shadowing Mode'}</span>
-            </div>
+              <div 
+                className="practice-mode-badge" 
+                onClick={() => {
+                  if (!isViewingCompleted) {
+                    setPracticeMode(prev => prev === 'dictation' ? 'shadowing' : prev === 'shadowing' ? 'scramble' : 'dictation');
+                    setShadowingScore(null);
+                    setIsShadowingComplete(false);
+                  }
+                }}
+                style={{ cursor: isViewingCompleted ? 'default' : 'pointer' }}
+                title={!isViewingCompleted ? 'Click to toggle mode' : ''}
+              >
+                <LayoutDashboard size={12} />
+                <span>{isViewingCompleted ? 'Review Mode' : practiceMode === 'dictation' ? 'Dictation Mode' : practiceMode === 'shadowing' ? 'Shadowing Mode' : 'Scramble Mode'}</span>
+              </div>
           </div>
 
           <button className="settings-btn icon-btn" onClick={() => setShowSettings(true)} title="Settings">
@@ -495,6 +509,25 @@ export default function PracticePage() {
                 }
               }}
             />
+          ) : practiceMode === 'scramble' ? (
+            <SentenceScramble
+              text={currentSegment?.text || ''}
+              onComplete={async (correct) => {
+                if (correct) {
+                  await recordAttempt(currentIndex, true);
+                  
+                  await awardXP({
+                    type: 'sentence_scramble',
+                    metadata: { segmentId: currentSegment?.id }
+                  });
+                }
+              }}
+              onSkip={() => {
+                // If they skip, mark as incorrect
+                recordAttempt(currentIndex, false);
+                advanceSegment(currentIndex + 1);
+              }}
+            />
           ) : (
             /* ── ACTIVE PRACTICE MODE ── */
             <>
@@ -566,6 +599,10 @@ export default function PracticePage() {
       />
 
       <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
+
+      {grammarTip && (
+        <GrammarTipPopup tip={grammarTip} onClose={() => setGrammarTip(null)} />
+      )}
     </div>
   );
 }
