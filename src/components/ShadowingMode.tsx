@@ -32,12 +32,15 @@ export function ShadowingMode({ expectedText, language, onComplete, onTryAgain, 
   const [showExpected, setShowExpected] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Guard to prevent double-firing onComplete
-  const hasCompletedRef = useRef(false);
+  // Guard: requires user to explicitly record in this cycle before scoring can fire.
+  // This prevents the race condition where resetting isComplete→false causes the
+  // scoring effect to fire with stale fullTranscript before resetTranscript() takes effect.
+  const userDidRecordRef = useRef(false);
 
-  // Recording timer
+  // Recording timer + track that user started recording
   useEffect(() => {
     if (isListening) {
+      userDidRecordRef.current = true;
       setRecordingSeconds(0);
       timerRef.current = setInterval(() => {
         setRecordingSeconds(prev => prev + 1);
@@ -53,25 +56,25 @@ export function ShadowingMode({ expectedText, language, onComplete, onTryAgain, 
     };
   }, [isListening]);
 
-  // Reset guard when parent resets isComplete
+  // Reset all local state when parent resets isComplete (e.g. Next segment, Try Again)
   useEffect(() => {
     if (!isComplete) {
-      hasCompletedRef.current = false;
+      userDidRecordRef.current = false;
       setResult(null);
       setShowExpected(false);
       resetTranscript();
     }
   }, [isComplete, resetTranscript]);
 
-  // Calculate accuracy when processing finishes
+  // Calculate accuracy when processing finishes — ONLY after user recorded in this cycle
   useEffect(() => {
-    if (!isListening && !isProcessing && fullTranscript && !isComplete && !hasCompletedRef.current) {
+    if (!isListening && !isProcessing && fullTranscript && !isComplete && userDidRecordRef.current) {
       // Use the same pronunciation scorer as SpeakBackMode for word-by-word diff
       const scoreResult = scorePronunciation(expectedText, fullTranscript);
       setResult(scoreResult);
       
-      // Mark as completed to prevent double-fire
-      hasCompletedRef.current = true;
+      // Prevent double-fire: clear the flag after scoring
+      userDidRecordRef.current = false;
       onComplete(scoreResult.overallScore);
     }
   }, [isListening, isProcessing, fullTranscript, isComplete, expectedText, onComplete]);
@@ -86,7 +89,7 @@ export function ShadowingMode({ expectedText, language, onComplete, onTryAgain, 
     setResult(null);
     setShowExpected(false);
     setRecordingSeconds(0);
-    hasCompletedRef.current = false;
+    userDidRecordRef.current = false;
     // Tell parent to reset isComplete and score
     onTryAgain();
   }, [resetTranscript, onTryAgain]);
