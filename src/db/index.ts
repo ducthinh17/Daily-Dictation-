@@ -12,6 +12,7 @@ export class DictinationDB extends Dexie {
   achievements!: Table<Achievement, string>;
   settings!: Table<SystemSettings, string>;
   dictionaryCache!: Table<{word: string, cachedAt: number, data: any}, string>;
+  translationCache!: Table<{key: string, text: string, translation: string, langPair: string, cachedAt: number}, string>;
   audioBookmarks!: Table<import('../types').AudioBookmark, string>;
   bookmarkTopics!: Table<import('../types').BookmarkTopic, string>;
   
@@ -204,6 +205,30 @@ export class DictinationDB extends Dexie {
       achievements: 'id, badgeId, unlockedAt',
       settings: 'id',
       dictionaryCache: 'word, cachedAt',
+      audioBookmarks: 'id, lessonId, segmentIndex, createdAt, *topicTags',
+      bookmarkTopics: 'id, name, createdAt',
+      xpLog: 'id, type, amount, timestamp',
+      dailyGoals: 'id, date',
+      weeklyQuests: 'id, weekStart',
+      srsCards: 'id, word, nextReviewAt, repetitions',
+      masteredWords: 'id, word, masteredAt',
+      sentenceBank: 'id, word, lessonId, createdAt',
+      diagnosticResults: 'id, takenAt'
+    });
+
+    // Version 10: Translation Cache
+    this.version(10).stores({
+      collections: 'id, category, createdAt',
+      lessons: 'id, collectionId, order, createdAt',
+      segments: 'id, lessonId, index',
+      progress: 'lessonId, lastActiveAt',
+      sessions: 'id, lessonId, startedAt, mode',
+      wordErrors: 'id, word, lessonId, timestamp',
+      userProfile: 'id',
+      achievements: 'id, badgeId, unlockedAt',
+      settings: 'id',
+      dictionaryCache: 'word, cachedAt',
+      translationCache: 'key, cachedAt',
       audioBookmarks: 'id, lessonId, segmentIndex, createdAt, *topicTags',
       bookmarkTopics: 'id, name, createdAt',
       xpLog: 'id, type, amount, timestamp',

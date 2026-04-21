@@ -2,6 +2,7 @@ import { CheckCircle2, XCircle, Volume2 } from 'lucide-react';
 import { useState } from 'react';
 import type { CheckResult } from '../types';
 import { WordDictionaryPopup, type Position } from './WordDictionaryPopup';
+import { TranslationPanel } from './TranslationPanel';
 import './FeedbackDisplay.css';
 
 interface FeedbackDisplayProps {
@@ -81,6 +82,18 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
   if (result.wrongCount > 0) errors.push(`${result.wrongCount} wrong word${result.wrongCount > 1 ? 's' : ''}`);
   if (result.missingCount > 0) errors.push(`Missing ${result.missingCount} word${result.missingCount > 1 ? 's' : ''}`);
   if (result.extraCount > 0) errors.push(`Extra ${result.extraCount} word${result.extraCount > 1 ? 's' : ''}`);
+
+  // Calculate correctly typed prefix for translation
+  let correctPrefixWords: string[] = [];
+  for (let i = 0; i < originalExpectedWords.length; i++) {
+    const normalize = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (inputWords[i] && normalize(inputWords[i]) === normalize(originalExpectedWords[i])) {
+      correctPrefixWords.push(originalExpectedWords[i]);
+    } else {
+      break; // Stop at first mistake
+    }
+  }
+  const sentencePrefix = correctPrefixWords.join(' ');
 
   return (
     <div className="feedback-display error glass-panel">
@@ -212,6 +225,8 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
           )}
         </p>
       </div>
+
+      <TranslationPanel sentencePrefix={sentencePrefix} />
 
       {selectedWord && (
         <WordDictionaryPopup

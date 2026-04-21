@@ -6,10 +6,12 @@ interface TypingAreaProps {
   expectedText?: string;
   onChange: (val: string) => void;
   onSubmit: () => void;
+  onHintWord?: () => void;
+  onHintLetter?: () => void;
   disabled?: boolean;
 }
 
-export function TypingArea({ value, onChange, onSubmit, disabled = false }: TypingAreaProps) {
+export function TypingArea({ value, onChange, onSubmit, onHintWord, onHintLetter, disabled = false }: TypingAreaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-focus logic
@@ -27,6 +29,12 @@ export function TypingArea({ value, onChange, onSubmit, disabled = false }: Typi
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onSubmit();
+    } else if (e.key === 'Tab') {
+      e.preventDefault(); // Prevent moving focus away from textarea
+      if (onHintLetter) onHintLetter();
+    } else if (e.key === '`' || e.key === '~') {
+      e.preventDefault(); // Prevent typing the character
+      if (onHintWord) onHintWord();
     }
   };
 

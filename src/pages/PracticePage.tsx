@@ -382,12 +382,18 @@ export default function PracticePage() {
     handleReplay();
   };
 
-  // Global Ctrl shortcut for replay
+  // Global shortcuts (Replay, Esc)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Control') {
         e.preventDefault();
         handleReplay();
+      } else if (e.key === 'Escape') {
+        // Close popups on Esc
+        setShowSettings(false);
+        setGrammarTip(null);
+        // Note: WordDictionaryPopup handles its own Esc closing, but we might 
+        // also want to clear any PracticePage state if needed here.
       }
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
@@ -584,6 +590,8 @@ export default function PracticePage() {
                 expectedText={currentSegment?.text || ''}
                 onChange={updateDraft}
                 onSubmit={handleSubmit}
+                onHintWord={handleHint}
+                onHintLetter={handleHintLetter}
                 disabled={checkResult?.correct}
               />
 
