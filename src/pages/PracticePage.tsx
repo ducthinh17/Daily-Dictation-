@@ -537,6 +537,10 @@ export default function PracticePage() {
               language={lesson?.language || 'en'}
               isComplete={isShadowingComplete}
               score={shadowingScore}
+              onTryAgain={() => {
+                setShadowingScore(null);
+                setIsShadowingComplete(false);
+              }}
               onComplete={async (accuracy) => {
                 setShadowingScore(accuracy);
                 setIsShadowingComplete(true);

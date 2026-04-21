@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
-import { Mic, Square, RefreshCcw, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Mic, Square, RefreshCcw, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
+import { scorePronunciation, type PronunciationResult, type WordScore } from '../utils/pronunciationScorer';
 import { Button } from './ui/Button';
 import './ShadowingMode.css';
 
@@ -8,12 +9,12 @@ interface ShadowingModeProps {
   expectedText: string;
   language: string;
   onComplete: (accuracy: number) => void;
+  onTryAgain: () => void;
   isComplete: boolean;
   score?: number | null;
 }
 
-export function ShadowingMode({ expectedText, language, onComplete, isComplete, score }: ShadowingModeProps) {
-  // Map our language to SpeechRecognition format
+export function ShadowingMode({ expectedText, language, onComplete, onTryAgain, isComplete, score }: ShadowingModeProps) {
   const recognitionLang = language === 'zh' ? 'zh-CN' : 'en-US';
   
   const {
@@ -27,47 +28,78 @@ export function ShadowingMode({ expectedText, language, onComplete, isComplete, 
     isSupported
   } = useSpeechRecognition(recognitionLang);
 
+  const [result, setResult] = useState<PronunciationResult | null>(null);
+  const [showExpected, setShowExpected] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Guard to prevent double-firing onComplete
+  const hasCompletedRef = useRef(false);
+
+  // Recording timer
   useEffect(() => {
-    // If it was complete and then reset
+    if (isListening) {
+      setRecordingSeconds(0);
+      timerRef.current = setInterval(() => {
+        setRecordingSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isListening]);
+
+  // Reset guard when parent resets isComplete
+  useEffect(() => {
     if (!isComplete) {
+      hasCompletedRef.current = false;
+      setResult(null);
+      setShowExpected(false);
       resetTranscript();
     }
   }, [isComplete, resetTranscript]);
 
-  const handleStop = () => {
-    stopListening();
-  };
-
   // Calculate accuracy when processing finishes
   useEffect(() => {
-    // We only want to calculate if we just finished listening and processing, and we have a transcript
-    // But since `isComplete` will become true when `onComplete` is called, we check `!isComplete`
-    if (!isListening && !isProcessing && fullTranscript && !isComplete) {
-      const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const expectedWords = expectedText.trim().split(/\s+/).filter(Boolean);
-      const spokenWords = fullTranscript.trim().split(/\s+/).filter(Boolean);
+    if (!isListening && !isProcessing && fullTranscript && !isComplete && !hasCompletedRef.current) {
+      // Use the same pronunciation scorer as SpeakBackMode for word-by-word diff
+      const scoreResult = scorePronunciation(expectedText, fullTranscript);
+      setResult(scoreResult);
       
-      if (expectedWords.length === 0) {
-        onComplete(0);
-        return;
-      }
-      
-      let matches = 0;
-      const spokenWordsNormalized = spokenWords.map(normalize);
-      
-      expectedWords.forEach(word => {
-        const normWord = normalize(word);
-        const index = spokenWordsNormalized.indexOf(normWord);
-        if (index !== -1) {
-          matches++;
-          spokenWordsNormalized.splice(index, 1);
-        }
-      });
-      
-      const accuracy = Math.round((matches / expectedWords.length) * 100);
-      onComplete(Math.min(100, Math.max(0, accuracy)));
+      // Mark as completed to prevent double-fire
+      hasCompletedRef.current = true;
+      onComplete(scoreResult.overallScore);
     }
   }, [isListening, isProcessing, fullTranscript, isComplete, expectedText, onComplete]);
+
+  const handleStop = useCallback(() => {
+    stopListening();
+  }, [stopListening]);
+
+  const handleTryAgain = useCallback(() => {
+    // Reset local state
+    resetTranscript();
+    setResult(null);
+    setShowExpected(false);
+    setRecordingSeconds(0);
+    hasCompletedRef.current = false;
+    // Tell parent to reset isComplete and score
+    onTryAgain();
+  }, [resetTranscript, onTryAgain]);
+
+  const handleStartAfterReset = useCallback(() => {
+    startListening();
+  }, [startListening]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   if (!isSupported) {
     return (
@@ -88,28 +120,41 @@ export function ShadowingMode({ expectedText, language, onComplete, isComplete, 
           </div>
           
           <div className="shadowing-controls">
-            {!isListening ? (
-              <Button size="lg" onClick={startListening} className="mic-btn start" style={{ borderRadius: '50px', padding: '16px 32px' }}>
+            {!isListening && !isProcessing ? (
+              <Button size="lg" onClick={handleStartAfterReset} className="mic-btn start" style={{ borderRadius: '50px', padding: '16px 32px' }}>
                 <Mic size={24} style={{ marginRight: '8px' }} />
                 Start Speaking
               </Button>
+            ) : isListening ? (
+              <div className="shadowing-recording-group">
+                <div className="recording-timer">
+                  <span className="recording-dot" />
+                  <span className="recording-time">{formatTime(recordingSeconds)}</span>
+                </div>
+                <Button size="lg" onClick={handleStop} variant="danger" className="mic-btn stop" style={{ borderRadius: '50px', padding: '16px 32px' }}>
+                  <Square size={20} style={{ marginRight: '8px' }} fill="currentColor" />
+                  Stop Recording
+                </Button>
+              </div>
             ) : (
-              <Button size="lg" onClick={handleStop} variant="danger" className="mic-btn stop" style={{ borderRadius: '50px', padding: '16px 32px' }}>
-                <Square size={20} style={{ marginRight: '8px' }} fill="currentColor" />
-                Stop Recording
-              </Button>
+              /* isProcessing */
+              <div className="shadowing-processing">
+                <div className="processing-spinner" />
+                <span>Analyzing your speech...</span>
+              </div>
             )}
           </div>
           
-          <div className={`shadowing-transcript ${isListening ? 'listening' : ''}`}>
+          <div className={`shadowing-transcript ${isListening ? 'listening' : ''} ${isProcessing ? 'processing' : ''}`}>
             {error ? (
               <span className="error-text">{error}</span>
-            ) : isProcessing ? (
-              <span className="placeholder processing">Processing audio...</span>
-            ) : fullTranscript ? (
-              <span className="transcript-text">{fullTranscript}</span>
             ) : isListening ? (
-              <span className="placeholder">Listening...</span>
+              <div className="listening-indicator">
+                <div className="sound-wave">
+                  <span /><span /><span /><span /><span />
+                </div>
+                <span className="placeholder">Listening... speak now</span>
+              </div>
             ) : (
               <span className="placeholder">Click the microphone when ready to speak</span>
             )}
@@ -117,6 +162,7 @@ export function ShadowingMode({ expectedText, language, onComplete, isComplete, 
         </div>
       ) : (
         <div className="shadowing-result">
+          {/* Score circle */}
           <div className="result-score">
             <div className="score-circle" style={{ 
               borderColor: score && score >= 90 ? 'var(--color-success)' : 
@@ -127,18 +173,86 @@ export function ShadowingMode({ expectedText, language, onComplete, isComplete, 
               <span className="score-value">{score}%</span>
               <span className="score-label">Accuracy</span>
             </div>
+            <div className="score-feedback">
+              {score && score >= 90 ? 'Excellent! 🎉' :
+               score && score >= 70 ? 'Good job! 👍' :
+               score && score >= 50 ? 'Keep practicing 💪' : 'Try again 🔄'}
+            </div>
+            {result && (
+              <div className="score-detail">
+                {result.wordsCorrect}/{result.wordsTotal} words matched
+              </div>
+            )}
           </div>
+
+          {/* Word-by-word comparison */}
+          {result && result.wordScores.length > 0 && (
+            <div className="shadowing-word-diff">
+              <div className="diff-header">
+                <span>Word-by-Word Comparison</span>
+                <button className="toggle-expected-btn" onClick={() => setShowExpected(!showExpected)}>
+                  {showExpected ? <EyeOff size={14} /> : <Eye size={14} />}
+                  {showExpected ? 'Hide' : 'Show'} Expected
+                </button>
+              </div>
+              <div className="diff-words">
+                {result.wordScores.map((ws, i) => (
+                  <ShadowWordChip key={i} score={ws} showExpected={showExpected} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Your transcript */}
+          {fullTranscript && (
+            <div className="your-transcript">
+              <span className="transcript-label">You said:</span>
+              <span className="transcript-value">"{fullTranscript}"</span>
+            </div>
+          )}
           
           <div className="result-actions">
-            <Button variant="secondary" onClick={() => {
-              resetTranscript();
-              // Trigger a small delay so parent can reset state
-              setTimeout(() => startListening(), 100);
-            }}>
+            <Button variant="secondary" onClick={handleTryAgain}>
               <RefreshCcw size={16} /> Try Again
             </Button>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function ShadowWordChip({ score, showExpected }: { score: WordScore, showExpected: boolean }) {
+  const getStatusClass = () => {
+    switch (score.status) {
+      case 'correct': return 'sw-correct';
+      case 'close': return 'sw-close';
+      case 'wrong': return 'sw-wrong';
+      case 'missing': return 'sw-missing';
+      case 'extra': return 'sw-extra';
+    }
+  };
+
+  const getIcon = () => {
+    switch (score.status) {
+      case 'correct': return '✅';
+      case 'close': return '⚠️';
+      case 'wrong': return '❌';
+      case 'missing': return '⬜';
+      case 'extra': return '➕';
+    }
+  };
+
+  return (
+    <div className={`sw-word-chip ${getStatusClass()}`}>
+      <span className="sw-word-icon">{getIcon()}</span>
+      <span className="sw-word-text">
+        {score.status === 'missing' ? score.expected : 
+         score.status === 'extra' ? score.spoken : 
+         score.spoken || score.expected}
+      </span>
+      {showExpected && score.status !== 'correct' && score.status !== 'extra' && score.expected && (
+        <span className="sw-word-expected">→ {score.expected}</span>
       )}
     </div>
   );
