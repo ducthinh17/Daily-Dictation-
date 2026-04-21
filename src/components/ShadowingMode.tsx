@@ -18,6 +18,7 @@ export function ShadowingMode({ expectedText, language, onComplete, isComplete, 
   
   const {
     isListening,
+    isProcessing,
     fullTranscript,
     error,
     startListening,
@@ -35,33 +36,38 @@ export function ShadowingMode({ expectedText, language, onComplete, isComplete, 
 
   const handleStop = () => {
     stopListening();
-    
-    // Calculate simple accuracy (word match percentage)
-    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const expectedWords = expectedText.trim().split(/\s+/).filter(Boolean);
-    const spokenWords = fullTranscript.trim().split(/\s+/).filter(Boolean);
-    
-    if (expectedWords.length === 0) {
-      onComplete(0);
-      return;
-    }
-    
-    let matches = 0;
-    const spokenWordsNormalized = spokenWords.map(normalize);
-    
-    expectedWords.forEach(word => {
-      const normWord = normalize(word);
-      const index = spokenWordsNormalized.indexOf(normWord);
-      if (index !== -1) {
-        matches++;
-        // Remove so we don't count it twice for duplicate words
-        spokenWordsNormalized.splice(index, 1);
-      }
-    });
-    
-    const accuracy = Math.round((matches / expectedWords.length) * 100);
-    onComplete(Math.min(100, Math.max(0, accuracy)));
   };
+
+  // Calculate accuracy when processing finishes
+  useEffect(() => {
+    // We only want to calculate if we just finished listening and processing, and we have a transcript
+    // But since `isComplete` will become true when `onComplete` is called, we check `!isComplete`
+    if (!isListening && !isProcessing && fullTranscript && !isComplete) {
+      const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const expectedWords = expectedText.trim().split(/\s+/).filter(Boolean);
+      const spokenWords = fullTranscript.trim().split(/\s+/).filter(Boolean);
+      
+      if (expectedWords.length === 0) {
+        onComplete(0);
+        return;
+      }
+      
+      let matches = 0;
+      const spokenWordsNormalized = spokenWords.map(normalize);
+      
+      expectedWords.forEach(word => {
+        const normWord = normalize(word);
+        const index = spokenWordsNormalized.indexOf(normWord);
+        if (index !== -1) {
+          matches++;
+          spokenWordsNormalized.splice(index, 1);
+        }
+      });
+      
+      const accuracy = Math.round((matches / expectedWords.length) * 100);
+      onComplete(Math.min(100, Math.max(0, accuracy)));
+    }
+  }, [isListening, isProcessing, fullTranscript, isComplete, expectedText, onComplete]);
 
   if (!isSupported) {
     return (
@@ -98,6 +104,8 @@ export function ShadowingMode({ expectedText, language, onComplete, isComplete, 
           <div className={`shadowing-transcript ${isListening ? 'listening' : ''}`}>
             {error ? (
               <span className="error-text">{error}</span>
+            ) : isProcessing ? (
+              <span className="placeholder processing">Processing audio...</span>
             ) : fullTranscript ? (
               <span className="transcript-text">{fullTranscript}</span>
             ) : isListening ? (

@@ -19,6 +19,7 @@ export function SpeakBackMode({ expectedText, language, onComplete, onReplayAudi
   
   const {
     isListening,
+    isProcessing,
     fullTranscript,
     confidence,
     error,
@@ -32,15 +33,15 @@ export function SpeakBackMode({ expectedText, language, onComplete, onReplayAudi
   const [result, setResult] = useState<PronunciationResult | null>(null);
   const [showExpected, setShowExpected] = useState(false);
 
-  // When listening stops and we have transcript, auto-score
+  // When listening and processing stops and we have transcript, auto-score
   useEffect(() => {
-    if (!isListening && fullTranscript && phase === 'speak') {
+    if (!isListening && !isProcessing && fullTranscript && phase === 'speak') {
       const scoreResult = scorePronunciation(expectedText, fullTranscript);
       setResult(scoreResult);
       setPhase('result');
       onComplete(scoreResult.overallScore);
     }
-  }, [isListening, fullTranscript, phase, expectedText, onComplete]);
+  }, [isListening, isProcessing, fullTranscript, phase, expectedText, onComplete]);
 
   const handleStartSpeaking = useCallback(() => {
     setPhase('speak');

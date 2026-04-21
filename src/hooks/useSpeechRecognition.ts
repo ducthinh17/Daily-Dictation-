@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getGroqApiKey } from '../utils/settingsStore';
 
 export interface SpeechResult {
   transcript: string;
@@ -6,154 +7,134 @@ export interface SpeechResult {
   isFinal: boolean;
 }
 
-declare global {
-  interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
-  }
-}
-
 interface UseSpeechRecognitionOptions {
-  /** Auto-stop after this many ms of silence after speech is detected. Default: 0 (disabled). */
+  /** Auto-stop after this many ms of silence. Not strictly implemented in this version to avoid complexity. */
   autoStopMs?: number;
 }
 
-export function useSpeechRecognition(language: string = 'en-US', options?: UseSpeechRecognitionOptions) {
+export function useSpeechRecognition(language: string = 'en-US', _options?: UseSpeechRecognitionOptions) {
   const [isListening, setIsListening] = useState(false);
-  const [interimTranscript, setInterimTranscript] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [finalTranscript, setFinalTranscript] = useState('');
   const [confidence, setConfidence] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [speechDetected, setSpeechDetected] = useState(false);
   
-  const recognitionRef = useRef<any>(null);
-  const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const speechStartTimeRef = useRef<number>(0);
 
-  const autoStopMs = options?.autoStopMs ?? 0;
+  const processAudio = async (blob: Blob) => {
+    setIsProcessing(true);
+    try {
+      const apiKey = await getGroqApiKey();
+      
+      if (!apiKey) {
+        throw new Error('Missing Groq API Key. Please configure it in Settings.');
+      }
 
-  useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-      setError('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
-      return;
+      const formData = new FormData();
+      formData.append('file', blob, 'audio.webm');
+      formData.append('model', 'whisper-large-v3-turbo');
+      
+      if (language) {
+        formData.append('language', language.split('-')[0]); 
+      }
+      formData.append('response_format', 'json');
+
+      const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Transcription failed');
+      }
+
+      const data = await response.json();
+      if (data.text) {
+        setFinalTranscript(data.text);
+        setConfidence(99); // Groq is highly accurate
+      }
+    } catch (err: any) {
+      console.error('Transcription error:', err);
+      setError(err.message || 'Failed to transcribe audio. Please try again.');
+    } finally {
+      setIsProcessing(false);
     }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = language;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      setError(null);
-      speechStartTimeRef.current = Date.now();
-    };
-
-    recognition.onspeechstart = () => {
-      setSpeechDetected(true);
-      // Clear any pending auto-stop
-      if (autoStopTimerRef.current) {
-        clearTimeout(autoStopTimerRef.current);
-        autoStopTimerRef.current = null;
-      }
-    };
-
-    recognition.onspeechend = () => {
-      // If auto-stop is enabled, start timer
-      if (autoStopMs > 0) {
-        autoStopTimerRef.current = setTimeout(() => {
-          try { recognition.stop(); } catch (_) { /* ignore */ }
-        }, autoStopMs);
-      }
-    };
-
-    recognition.onresult = (event: any) => {
-      let currentInterim = '';
-      let currentFinal = '';
-      let maxConfidence = 0;
-
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const result = event.results[i];
-        const conf = result[0].confidence;
-        if (conf > maxConfidence) maxConfidence = conf;
-        
-        if (result.isFinal) {
-          currentFinal += result[0].transcript;
-        } else {
-          currentInterim += result[0].transcript;
-        }
-      }
-
-      setInterimTranscript(currentInterim);
-      if (currentFinal) {
-        setFinalTranscript(prev => prev + ' ' + currentFinal);
-      }
-      if (maxConfidence > 0) {
-        setConfidence(Math.round(maxConfidence * 100));
-      }
-
-      // Reset auto-stop timer on new result
-      if (autoStopMs > 0 && autoStopTimerRef.current) {
-        clearTimeout(autoStopTimerRef.current);
-        autoStopTimerRef.current = setTimeout(() => {
-          try { recognition.stop(); } catch (_) { /* ignore */ }
-        }, autoStopMs);
-      }
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
-      setError(`Speech recognition error: ${event.error}`);
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      if (autoStopTimerRef.current) clearTimeout(autoStopTimerRef.current);
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch (_) { /* ignore */ }
-      }
-    };
-  }, [language, autoStopMs]);
-
-  const startListening = useCallback(() => {
-    if (recognitionRef.current && !isListening) {
-      setInterimTranscript('');
-      setFinalTranscript('');
-      setConfidence(0);
-      setError(null);
-      setSpeechDetected(false);
-      try {
-        recognitionRef.current.start();
-      } catch (err) {
-        console.error("Failed to start recognition", err);
-        setError("Failed to start microphone. Please check permissions.");
-      }
-    }
-  }, [isListening]);
+  };
 
   const stopListening = useCallback(() => {
-    if (autoStopTimerRef.current) {
-      clearTimeout(autoStopTimerRef.current);
-      autoStopTimerRef.current = null;
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop(); // This triggers onstop event
     }
-    if (recognitionRef.current && isListening) {
-      try { recognitionRef.current.stop(); } catch (_) { /* ignore */ }
+    
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
-  }, [isListening]);
+    
+    setIsListening(false);
+  }, []);
+
+  const startListening = useCallback(async () => {
+    if (isListening || isProcessing) return;
+
+    setFinalTranscript('');
+    setConfidence(0);
+    setError(null);
+    setSpeechDetected(true); // Assume speech for UI feedback immediately
+    audioChunksRef.current = [];
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        processAudio(audioBlob);
+      };
+
+      mediaRecorder.start();
+      setIsListening(true);
+      speechStartTimeRef.current = Date.now();
+      
+    } catch (err) {
+      console.error("Failed to start recording", err);
+      setError("Failed to start microphone. Please check permissions.");
+    }
+  }, [isListening, isProcessing]);
 
   const resetTranscript = useCallback(() => {
-    setInterimTranscript('');
     setFinalTranscript('');
     setConfidence(0);
     setSpeechDetected(false);
+    setError(null);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
   }, []);
 
   const speechDuration = speechStartTimeRef.current > 0 && !isListening
@@ -162,9 +143,10 @@ export function useSpeechRecognition(language: string = 'en-US', options?: UseSp
 
   return {
     isListening,
-    interimTranscript,
+    isProcessing,
+    interimTranscript: '', // Groq API doesn't do streaming interim results
     finalTranscript: finalTranscript.trim(),
-    fullTranscript: (finalTranscript + ' ' + interimTranscript).trim(),
+    fullTranscript: finalTranscript.trim(), // Keep fullTranscript for compatibility
     confidence,
     speechDetected,
     speechDuration,
@@ -172,6 +154,6 @@ export function useSpeechRecognition(language: string = 'en-US', options?: UseSp
     startListening,
     stopListening,
     resetTranscript,
-    isSupported: !!recognitionRef.current
+    isSupported: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
   };
 }
