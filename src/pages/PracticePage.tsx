@@ -382,9 +382,14 @@ export default function PracticePage() {
     handleReplay();
   };
 
-  // Global shortcuts (Replay, Esc)
+  // Global shortcuts (Replay, Esc, Toggle Mode)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input or textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       if (e.key === 'Control') {
         e.preventDefault();
         handleReplay();
@@ -392,13 +397,18 @@ export default function PracticePage() {
         // Close popups on Esc
         setShowSettings(false);
         setGrammarTip(null);
-        // Note: WordDictionaryPopup handles its own Esc closing, but we might 
-        // also want to clear any PracticePage state if needed here.
+      } else if (e.key === '1') {
+        e.preventDefault();
+        if (!isViewingCompleted) {
+          setPracticeMode(prev => prev === 'dictation' ? 'shadowing' : prev === 'shadowing' ? 'scramble' : prev === 'scramble' ? 'speak-back' : 'dictation');
+          setShadowingScore(null);
+          setIsShadowingComplete(false);
+        }
       }
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [handleReplay]);
+  }, [handleReplay, isViewingCompleted]);
 
   if (!lesson || !segments || !progress) {
     return <div className="practice-page loading">Loading lesson...</div>;
