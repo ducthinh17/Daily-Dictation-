@@ -385,15 +385,19 @@ export default function PracticePage() {
   // Global shortcuts (Replay, Esc, Toggle Mode)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is typing in an input or textarea
+      // Allow Control (Replay) to work everywhere, even while typing
+      if (e.key === 'Control') {
+        e.preventDefault();
+        handleReplay();
+        return;
+      }
+
+      // Ignore other shortcuts if user is typing in an input or textarea
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
-      if (e.key === 'Control') {
-        e.preventDefault();
-        handleReplay();
-      } else if (e.key === 'Escape') {
+      if (e.key === 'Escape') {
         // Close popups on Esc
         setShowSettings(false);
         setGrammarTip(null);
