@@ -74,23 +74,27 @@
 }
 
 .wordChipAvailable {
-  background: white;
+  background: var(--bg-card);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
 }
 
 .wordChipAvailable:hover {
+  background: var(--bg-glass);
+  border-color: var(--text-secondary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .wordChipSelected {
-  background: #3b82f6;
+  background: var(--accent-primary);
   color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .wordChipSelected:hover {
-  background: #2563eb;
+  filter: brightness(1.1);
   transform: translateY(2px);
 }
 
