@@ -26,6 +26,18 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Escape' || e.key === 'Esc') && isOpen) {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
+  }, [isOpen, onClose]);
+
   const handleSave = async () => {
     await setGroqApiKey(apiKey);
     await setDefaultLanguage(language);

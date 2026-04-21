@@ -67,10 +67,13 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
   // Escape to close
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        e.stopPropagation();
+        onClose();
+      }
     };
-    document.addEventListener('keydown', handleEsc);
-    return () => document.removeEventListener('keydown', handleEsc);
+    window.addEventListener('keydown', handleEsc, { capture: true });
+    return () => window.removeEventListener('keydown', handleEsc, { capture: true });
   }, [onClose]);
 
   if (!word || !position) return null;

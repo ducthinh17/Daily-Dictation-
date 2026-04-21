@@ -393,7 +393,7 @@ export default function PracticePage() {
       }
 
       // Allow Escape to work everywhere, even while typing
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' || e.key === 'Esc') {
         setShowSettings(false);
         setGrammarTip(null);
         return;
@@ -413,8 +413,10 @@ export default function PracticePage() {
         }
       }
     };
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    
+    // Use capture phase to ensure this runs before any inputs can stop propagation
+    window.addEventListener('keydown', handleGlobalKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown, { capture: true });
   }, [handleReplay, isViewingCompleted]);
 
   if (!lesson || !segments || !progress) {

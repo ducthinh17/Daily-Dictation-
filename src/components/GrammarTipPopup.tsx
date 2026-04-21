@@ -22,6 +22,18 @@ export function GrammarTipPopup({ tip, onClose }: Props) {
     setTimeout(onClose, 250);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        e.stopPropagation(); // Prevent other listeners from firing since we are handling it
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
+  }, []);
+
   const ex = tip.examples[exampleIdx];
 
   return (

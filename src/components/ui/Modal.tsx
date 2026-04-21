@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import './Modal.css';
 
 interface ModalProps {
@@ -9,6 +10,18 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Escape' || e.key === 'Esc') && isOpen && onClose) {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
