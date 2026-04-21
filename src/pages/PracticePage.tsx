@@ -392,16 +392,19 @@ export default function PracticePage() {
         return;
       }
 
+      // Allow Escape to work everywhere, even while typing
+      if (e.key === 'Escape') {
+        setShowSettings(false);
+        setGrammarTip(null);
+        return;
+      }
+
       // Ignore other shortcuts if user is typing in an input or textarea
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
-      if (e.key === 'Escape') {
-        // Close popups on Esc
-        setShowSettings(false);
-        setGrammarTip(null);
-      } else if (e.key === '1') {
+      if (e.key === '1') {
         e.preventDefault();
         if (!isViewingCompleted) {
           setPracticeMode(prev => prev === 'dictation' ? 'shadowing' : prev === 'shadowing' ? 'scramble' : prev === 'scramble' ? 'speak-back' : 'dictation');
