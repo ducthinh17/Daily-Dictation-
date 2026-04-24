@@ -14,6 +14,7 @@ interface CompletedSegmentViewProps {
   attempts: number;
   mistakes: number;
   isPlaying: boolean;
+  language?: string;
   onReplay: () => void;
   onResume: () => void;
 }
@@ -28,6 +29,7 @@ export function CompletedSegmentView({
   attempts,
   mistakes,
   isPlaying,
+  language = 'en',
   onReplay,
   onResume,
 }: CompletedSegmentViewProps) {
@@ -131,6 +133,7 @@ export function CompletedSegmentView({
       {selectedWord && (
         <WordDictionaryPopup
           word={selectedWord}
+          language={language}
           position={popupPosition}
           onClose={() => setSelectedWord(null)}
         />

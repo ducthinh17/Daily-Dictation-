@@ -526,6 +526,7 @@ export default function PracticePage() {
               attempts={progress.attempts[viewingCompletedIndex!] || 0}
               mistakes={progress.mistakes[viewingCompletedIndex!] || 0}
               isPlaying={isPlaying}
+              language={lesson?.language || 'en'}
               onReplay={() => playSegmentByIndex(viewingCompletedIndex!)}
               onResume={() => {
                 setViewingCompletedIndex(null);

@@ -11,11 +11,12 @@ export interface Position {
 
 interface WordDictionaryPopupProps {
   word: string;
+  language?: string;
   position: Position | null;
   onClose: () => void;
 }
 
-export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryPopupProps) {
+export function WordDictionaryPopup({ word, language = 'en', position, onClose }: WordDictionaryPopupProps) {
   const [data, setData] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -29,7 +30,7 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
     setLoading(true);
     setError(false);
     
-    dictionaryService.fetchWord(word).then(res => {
+    dictionaryService.fetchWord(word, language).then(res => {
       if (!isMounted) return;
       if (res) {
         setData(res);
@@ -46,7 +47,7 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
     });
 
     return () => { isMounted = false; };
-  }, [word]);
+  }, [word, language]);
 
   // Click outside to close
   useEffect(() => {
@@ -106,7 +107,7 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
 
   // Render helpers
   const playAudio = (audioUrl?: string, accent?: 'US' | 'UK' | 'AU' | 'IN' | 'unknown') => {
-    dictionaryService.playAudio(audioUrl, word, (accent === 'UK' || accent === 'AU' || accent === 'IN') ? accent : 'US');
+    dictionaryService.playAudio(audioUrl, word, (accent === 'UK' || accent === 'AU' || accent === 'IN') ? accent : 'US', language);
   };
 
   const usPhonetic = data?.phonetics.find(p => p.accent === 'US' && p.text);
@@ -120,60 +121,78 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
       <button className="dict-close-btn" onClick={onClose}><X size={16} /></button>
       
       <div className="dict-header">
-        <h3 className="dict-word">{word.toLowerCase()}</h3>
+        <h3 className="dict-word">{language === 'en' ? word.toLowerCase() : word}</h3>
         
         {loading && <div className="dict-loading"><Loader2 size={16} className="spin" /> Fetching...</div>}
         
         {!loading && !error && (
           <div className="dict-phonetics">
-            {usPhonetic && (
-              <div className="dict-phonetic-item">
-                <span className="accent-tag us">US</span>
-                <span className="ipa">{usPhonetic.text}</span>
-                <button className="audio-btn" onClick={() => playAudio(usPhonetic.audio, 'US')}>
-                  <Volume2 size={14} />
-                </button>
-              </div>
-            )}
-            
-            {ukPhonetic && (
-              <div className="dict-phonetic-item">
-                <span className="accent-tag uk">UK</span>
-                <span className="ipa">{ukPhonetic.text}</span>
-                <button className="audio-btn" onClick={() => playAudio(ukPhonetic.audio, 'UK')}>
-                  <Volume2 size={14} />
-                </button>
-              </div>
-            )}
+            {language === 'en' ? (
+              <>
+                {usPhonetic && (
+                  <div className="dict-phonetic-item">
+                    <span className="accent-tag us">US</span>
+                    <span className="ipa">{usPhonetic.text}</span>
+                    <button className="audio-btn" onClick={() => playAudio(usPhonetic.audio, 'US')}>
+                      <Volume2 size={14} />
+                    </button>
+                  </div>
+                )}
+                
+                {ukPhonetic && (
+                  <div className="dict-phonetic-item">
+                    <span className="accent-tag uk">UK</span>
+                    <span className="ipa">{ukPhonetic.text}</span>
+                    <button className="audio-btn" onClick={() => playAudio(ukPhonetic.audio, 'UK')}>
+                      <Volume2 size={14} />
+                    </button>
+                  </div>
+                )}
 
-            {!usPhonetic && !ukPhonetic && fallbackPhonetic && (
-               <div className="dict-phonetic-item">
-                <span className="ipa">{fallbackPhonetic.text}</span>
-                <button className="audio-btn" onClick={() => playAudio(fallbackPhonetic.audio)}>
-                  <Volume2 size={14} />
-                </button>
-              </div>
+                {!usPhonetic && !ukPhonetic && fallbackPhonetic && (
+                   <div className="dict-phonetic-item">
+                    <span className="ipa">{fallbackPhonetic.text}</span>
+                    <button className="audio-btn" onClick={() => playAudio(fallbackPhonetic.audio)}>
+                      <Volume2 size={14} />
+                    </button>
+                  </div>
+                )}
+                
+                {data?.phonetics.length === 0 && (
+                   <div className="dict-phonetic-item">
+                      <button className="audio-btn" onClick={() => playAudio(undefined, 'US')}>
+                        <Volume2 size={14} /> Listen
+                      </button>
+                   </div>
+                )}
+                
+                <div className="dict-extra-voices">
+                  <span className="voices-label">More Voices:</span>
+                  <div className="voices-row">
+                    <button className="voice-btn au" onClick={() => dictionaryService.playTTS(word, 'AU', language)}>
+                      <Volume2 size={12} /> AU
+                    </button>
+                    <button className="voice-btn in" onClick={() => dictionaryService.playTTS(word, 'IN', language)}>
+                      <Volume2 size={12} /> IN
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              // Non-English (JA/ZH) Phonetics View
+              <>
+                 {fallbackPhonetic && (
+                   <div className="dict-phonetic-item">
+                     <span className="ipa">{fallbackPhonetic.text}</span>
+                   </div>
+                 )}
+                 <div className="dict-phonetic-item">
+                    <button className="audio-btn" onClick={() => playAudio(undefined, 'US')}>
+                      <Volume2 size={14} /> Listen
+                    </button>
+                 </div>
+              </>
             )}
-            
-            {data?.phonetics.length === 0 && (
-               <div className="dict-phonetic-item">
-                  <button className="audio-btn" onClick={() => playAudio(undefined, 'US')}>
-                    <Volume2 size={14} /> Listen
-                  </button>
-               </div>
-            )}
-            
-            <div className="dict-extra-voices">
-              <span className="voices-label">More Voices:</span>
-              <div className="voices-row">
-                <button className="voice-btn au" onClick={() => dictionaryService.playTTS(word, 'AU')}>
-                  <Volume2 size={12} /> AU
-                </button>
-                <button className="voice-btn in" onClick={() => dictionaryService.playTTS(word, 'IN')}>
-                  <Volume2 size={12} /> IN
-                </button>
-              </div>
-            </div>
           </div>
         )}
       </div>
@@ -182,7 +201,7 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
         {error ? (
           <div className="dict-error-state">
             <p>Definition not found for "{word}".</p>
-            <button className="audio-btn fallback-play" onClick={() => dictionaryService.playTTS(word, 'US')}>
+            <button className="audio-btn fallback-play" onClick={() => dictionaryService.playTTS(word, 'US', language)}>
               <Volume2 size={16} /> Play Pronunciation
             </button>
           </div>
@@ -239,7 +258,7 @@ export function WordDictionaryPopup({ word, position, onClose }: WordDictionaryP
         )}
       </div>
       
-      {data?.sourceUrls && data.sourceUrls.length > 0 && (
+      {language === 'en' && data?.sourceUrls && data.sourceUrls.length > 0 && (
          <div className="dict-footer">
             <a href={data.sourceUrls[0]} target="_blank" rel="noreferrer" className="source-link">
               Wiktionary <ExternalLink size={10} />

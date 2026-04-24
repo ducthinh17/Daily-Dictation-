@@ -14,13 +14,15 @@ export interface DictionaryEntry {
 const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export const dictionaryService = {
-  async fetchWord(word: string): Promise<DictionaryEntry | null> {
-    const cleanWord = word.trim().toLowerCase().replace(/[^a-z0-9-']/g, '');
+  async fetchWord(word: string, language: string = 'en'): Promise<DictionaryEntry | null> {
+    const cleanWord = word.trim().toLowerCase();
     if (!cleanWord) return null;
+
+    const cacheKey = `${language}:${cleanWord}`;
 
     // 1. Check Cache
     try {
-      const cached = await db.dictionaryCache.get(cleanWord);
+      const cached = await db.dictionaryCache.get(cacheKey);
       if (cached && (Date.now() - cached.cachedAt < CACHE_TTL)) {
         return cached.data as DictionaryEntry;
       }
@@ -28,37 +30,117 @@ export const dictionaryService = {
       console.warn("Dictionary cache read failed", e);
     }
 
-    // 2. Fetch from Free Dictionary API
-    try {
-      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(cleanWord)}`);
-      
-      if (!response.ok) {
-        if (response.status === 404) return null; // Word not found
-        throw new Error(`Dictionary API error: ${response.status}`);
-      }
+    let entry: DictionaryEntry | null = null;
 
-      const data = await response.json();
-      
-      // Free Dictionary API returns an array of results. We merge them.
-      if (!Array.isArray(data) || data.length === 0) return null;
+    if (language === 'en') {
+      entry = await this.fetchEnglishDict(cleanWord);
+    } else {
+      entry = await this.fetchGoogleDict(cleanWord, language);
+    }
 
-      const entry = this.normalizeApiData(cleanWord, data);
-
+    if (entry) {
       // 3. Save to Cache
       try {
         await db.dictionaryCache.put({
-          word: cleanWord,
+          word: cacheKey,
           cachedAt: Date.now(),
           data: entry
         });
       } catch (e) {
         console.warn("Dictionary cache write failed", e);
       }
+    }
 
-      return entry;
+    return entry;
+  },
 
-    } catch (error) {
-      console.error("Dictionary service error:", error);
+  async fetchEnglishDict(word: string): Promise<DictionaryEntry | null> {
+      try {
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+        if (!response.ok) {
+          if (response.status === 404) return null; // Word not found
+          throw new Error(`Dictionary API error: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) return null;
+  
+        return this.normalizeApiData(word, data);
+      } catch (error) {
+        console.error("Dictionary service error:", error);
+        return null;
+      }
+  },
+
+  async fetchGoogleDict(word: string, lang: string): Promise<DictionaryEntry | null> {
+    try {
+      // Query English definition for JA/ZH to be consistent and have a good dictionary structure
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${lang}&tl=en&hl=en&dt=bd&dt=md&dt=rm&dt=t&q=${encodeURIComponent(word)}`;
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (!data || !data[0]) return null;
+
+      // Extract Romaji/Pinyin
+      let pinyin = '';
+      if (data[0] && Array.isArray(data[0])) {
+         for (const item of data[0]) {
+             if (item && item.length > 3 && typeof item[3] === 'string' && item[3]) {
+                 pinyin = item[3];
+                 break;
+             }
+         }
+      }
+      
+      const translation = data[0][0][0];
+      const phonetics: DictionaryEntry['phonetics'] = [];
+      
+      if (pinyin) {
+          phonetics.push({ text: pinyin, accent: 'unknown' });
+      }
+
+      const meanings: DictionaryEntry['meanings'] = [];
+      if (data[1] && Array.isArray(data[1])) {
+          data[1].forEach(posGroup => {
+              const pos = posGroup[0]; // e.g., "verb"
+              const defs = posGroup[2] || [];
+              const definitions = defs.map((d: any) => ({
+                  definition: d[0], // Translation meaning
+                  example: d[1] ? `Similar: ${d[1].join(', ')}` : '', // Synonyms in original lang
+                  synonyms: [],
+                  antonyms: []
+              }));
+              
+              if (definitions.length === 0 && posGroup[1]) {
+                 // Fallback if no detailed defs
+                 definitions.push({
+                     definition: posGroup[1].join(', '),
+                     synonyms: [], antonyms: []
+                 });
+              }
+
+              meanings.push({
+                  partOfSpeech: pos,
+                  definitions
+              });
+          });
+      } else {
+          // If no dictionary data, just use the translation
+          meanings.push({
+              partOfSpeech: 'translation',
+              definitions: [{ definition: translation, synonyms: [], antonyms: [] }]
+          });
+      }
+
+      return {
+          word,
+          phonetics,
+          meanings,
+          sourceUrls: [],
+          cachedAt: Date.now()
+      };
+    } catch(e) {
+      console.error(e);
       return null;
     }
   },
@@ -132,51 +214,59 @@ export const dictionaryService = {
     };
   },
 
-  playAudio(audioUrl?: string, text?: string, fallbackAccent: 'US' | 'UK' | 'AU' | 'IN' = 'US') {
+  playAudio(audioUrl?: string, text?: string, fallbackAccent: 'US' | 'UK' | 'AU' | 'IN' = 'US', language = 'en') {
       if (audioUrl) {
           const audio = new Audio(audioUrl);
           audio.play().catch(e => {
               console.warn("Failed to play audio url, falling back to TTS", e);
-              if (text) this.playTTS(text, fallbackAccent);
+              if (text) this.playTTS(text, fallbackAccent, language);
           });
       } else if (text) {
-          this.playTTS(text, fallbackAccent);
+          this.playTTS(text, fallbackAccent, language);
       }
   },
 
-  playTTS(text: string, accent: 'US' | 'UK' | 'AU' | 'IN') {
-    const cleanText = text.replace(/[^a-zA-Z0-9-'\s.,?!]/g, '').trim();
+  playTTS(text: string, accent: 'US' | 'UK' | 'AU' | 'IN', language = 'en') {
+    const cleanText = text.replace(/[^a-zA-Z0-9-'\s.,?!ぁ-んァ-ン一-龯]/g, '').trim();
     if (!cleanText) return;
 
-    // Youdao only supports US(2) and UK(1).
-    if (accent === 'US' || accent === 'UK') {
+    // Youdao only supports US(2) and UK(1) for English.
+    if (language === 'en' && (accent === 'US' || accent === 'UK')) {
       const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(cleanText)}&type=${accent === 'US' ? 2 : 1}`;
       const audio = new Audio(audioUrl);
       
       audio.play().catch(() => {
-        this._playBrowserTTS(cleanText, accent);
+        this._playBrowserTTS(cleanText, accent, language);
       });
     } else {
-      this._playBrowserTTS(cleanText, accent);
+      this._playBrowserTTS(cleanText, accent, language);
     }
   },
 
-  _playBrowserTTS(text: string, accent: 'US' | 'UK' | 'AU' | 'IN') {
+  _playBrowserTTS(text: string, accent: 'US' | 'UK' | 'AU' | 'IN', language = 'en') {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
-    const langMap = {
-        'US': 'en-US',
-        'UK': 'en-GB',
-        'AU': 'en-AU',
-        'IN': 'en-IN'
-    };
-    utterance.lang = langMap[accent];
+    
+    let targetLang = 'en-US';
+    if (language === 'ja') targetLang = 'ja-JP';
+    else if (language === 'zh') targetLang = 'zh-CN';
+    else {
+      const langMap: Record<string, string> = {
+          'US': 'en-US',
+          'UK': 'en-GB',
+          'AU': 'en-AU',
+          'IN': 'en-IN'
+      };
+      targetLang = langMap[accent] || 'en-US';
+    }
+    
+    utterance.lang = targetLang;
     
     // Try to find a good voice
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoices = voices.filter(v => v.lang.includes(langMap[accent]) || v.lang.includes(langMap[accent].replace('-', '_')));
+    const preferredVoices = voices.filter(v => v.lang.includes(targetLang) || v.lang.includes(targetLang.replace('-', '_')));
     if (preferredVoices.length > 0) {
         // prefer voices with "Premium", "Natural", "Google" in the name
         const premium = preferredVoices.find(v => v.name.includes('Premium') || v.name.includes('Natural') || v.name.includes('Google'));
