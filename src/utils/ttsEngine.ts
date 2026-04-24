@@ -1,6 +1,6 @@
 import { db } from '../db';
 
-export async function playAudio(text: string, engine: 'groq' | 'browser' = 'browser', lang: 'en' | 'zh' = 'en') {
+export async function playAudio(text: string, engine: 'groq' | 'browser' = 'browser', lang: 'en' | 'zh' | 'ja' = 'en') {
   if (engine === 'browser') {
     return new Promise<void>((resolve, reject) => {
       if (!('speechSynthesis' in window)) {
@@ -22,6 +22,9 @@ export async function playAudio(text: string, engine: 'groq' | 'browser' = 'brow
       } else if (lang === 'zh') {
         const zhVoice = voices.find(v => v.lang.startsWith('zh'));
         if (zhVoice) utterance.voice = zhVoice;
+      } else if (lang === 'ja') {
+        const jaVoice = voices.find(v => v.lang.startsWith('ja'));
+        if (jaVoice) utterance.voice = jaVoice;
       }
 
       // Get user playback rate preference

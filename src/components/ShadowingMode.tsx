@@ -15,7 +15,7 @@ interface ShadowingModeProps {
 }
 
 export function ShadowingMode({ expectedText, language, onComplete, onTryAgain, isComplete, score }: ShadowingModeProps) {
-  const recognitionLang = language === 'zh' ? 'zh-CN' : 'en-US';
+  const recognitionLang = language === 'ja' ? 'ja-JP' : language === 'zh' ? 'zh-CN' : 'en-US';
   
   const {
     isListening,

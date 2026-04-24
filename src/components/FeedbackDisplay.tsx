@@ -1,6 +1,7 @@
 import { CheckCircle2, XCircle, Volume2 } from 'lucide-react';
 import { useState } from 'react';
-import type { CheckResult } from '../types';
+import type { CheckResult, SupportedLanguage } from '../types';
+import { tokenize, normalize } from '../utils/answerChecker';
 import { WordDictionaryPopup, type Position } from './WordDictionaryPopup';
 import { TranslationPanel } from './TranslationPanel';
 import './FeedbackDisplay.css';
@@ -9,17 +10,18 @@ interface FeedbackDisplayProps {
   result: CheckResult | null;
   expectedText: string;
   input: string;
+  lessonLanguage?: SupportedLanguage;
 }
 
-export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplayProps) {
+export function FeedbackDisplay({ result, expectedText, input, lessonLanguage = 'en' }: FeedbackDisplayProps) {
   const [accent, setAccent] = useState<'US' | 'UK'>('US');
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [popupPosition, setPopupPosition] = useState<Position | null>(null);
 
   if (!result) return null;
 
-  const originalExpectedWords = expectedText.trim().split(/\s+/).filter(w => w.length > 0);
-  const inputWords = input.trim().split(/\s+/).filter(w => w.length > 0);
+  const originalExpectedWords = tokenize(expectedText, lessonLanguage);
+  const inputWords = tokenize(input, lessonLanguage);
 
   const playAudio = (text: string) => {
     // Clean text: keep spaces and basic punctuation for full sentences
@@ -56,6 +58,7 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
   };
 
   const handleWordClick = (word: string, e: React.MouseEvent) => {
+    if (lessonLanguage === 'ja' || lessonLanguage === 'zh') return;
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     setPopupPosition({
       top: rect.top,
@@ -86,7 +89,6 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
   // Calculate correctly typed prefix for translation
   let correctPrefixWords: string[] = [];
   for (let i = 0; i < originalExpectedWords.length; i++) {
-    const normalize = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (inputWords[i] && normalize(inputWords[i]) === normalize(originalExpectedWords[i])) {
       correctPrefixWords.push(originalExpectedWords[i]);
     } else {
@@ -166,7 +168,6 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
           {originalExpectedWords.map((expectedWord, idx) => {
             const inputWord = inputWords[idx];
             
-            const normalize = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, '');
             const isCorrect = inputWord && normalize(inputWord) === normalize(expectedWord);
             
             if (isCorrect) {
@@ -211,7 +212,7 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
                   style={{ color: '#9ca3af', letterSpacing: '4px', fontWeight: 'bold', cursor: 'pointer' }} 
                   title={`Missing word: ${expectedWord}`}
                 >
-                  {expectedWord.replace(/[^a-zA-Z0-9]/g, '').split('').map(() => '_').join('')}
+                  {'_'.repeat(Math.max(1, normalize(expectedWord).length))}
                 </span>
               </span>
             );
@@ -226,7 +227,7 @@ export function FeedbackDisplay({ result, expectedText, input }: FeedbackDisplay
         </p>
       </div>
 
-      <TranslationPanel sentencePrefix={sentencePrefix} />
+      <TranslationPanel sentencePrefix={sentencePrefix} sourceLang={lessonLanguage} />
 
       {selectedWord && (
         <WordDictionaryPopup

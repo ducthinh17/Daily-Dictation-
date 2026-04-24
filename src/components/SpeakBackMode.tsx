@@ -15,7 +15,7 @@ interface SpeakBackModeProps {
 type Phase = 'listen' | 'speak' | 'result';
 
 export function SpeakBackMode({ expectedText, language, onComplete, onReplayAudio }: SpeakBackModeProps) {
-  const recognitionLang = language === 'zh' ? 'zh-CN' : 'en-US';
+  const recognitionLang = language === 'ja' ? 'ja-JP' : language === 'zh' ? 'zh-CN' : 'en-US';
   
   const {
     isListening,

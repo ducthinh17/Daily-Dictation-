@@ -3,7 +3,7 @@ import { db } from '../db';
 const CACHE_TTL = 90 * 24 * 60 * 60 * 1000; // 90 days
 
 export const translationService = {
-  async translate(text: string, fromLang: 'en' | 'vi' = 'en', toLang: 'en' | 'vi' = 'vi'): Promise<string | null> {
+  async translate(text: string, fromLang: string = 'en', toLang: string = 'vi'): Promise<string | null> {
     const cleanText = text.trim();
     if (!cleanText) return null;
 

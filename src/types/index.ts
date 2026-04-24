@@ -1,4 +1,4 @@
-export type SupportedLanguage = 'en' | 'zh';
+export type SupportedLanguage = 'en' | 'zh' | 'ja';
 export type LessonMode = 'audio-script' | 'audio-only';
 
 export type LessonCategory = 'ielts' | 'toefl' | 'business' | 'daily' | 'academic' | 'custom';

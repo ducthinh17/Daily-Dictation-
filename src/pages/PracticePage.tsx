@@ -5,7 +5,7 @@ import { ArrowLeft, Settings as SettingsIcon, Volume2, LayoutDashboard } from 'l
 import { db } from '../db';
 import { useProgress } from '../hooks/useProgress';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
-import { checkAnswer } from '../utils/answerChecker';
+import { checkAnswer, tokenize, normalize } from '../utils/answerChecker';
 import { awardXP } from '../utils/xpEngine';
 import { updateGoalProgress } from '../utils/questEngine';
 import type { CheckResult } from '../types';
@@ -196,7 +196,7 @@ export default function PracticePage() {
   const handleSubmit = async () => {
     if (!currentSegment || isViewingCompleted) return;
 
-    const result = checkAnswer(draftInput, currentSegment.text);
+    const result = checkAnswer(draftInput, currentSegment.text, lesson?.language);
     setCheckResult(result);
 
     const isFirstTry = progress && !progress.attempts[currentIndex];
@@ -218,8 +218,8 @@ export default function PracticePage() {
     }
 
     if (!result.correct && result.wrongPositions && result.wrongPositions.length > 0) {
-      const expectedWords = currentSegment.text.trim().split(/\s+/);
-      const inputWords = draftInput.trim().split(/\s+/);
+      const expectedWords = tokenize(currentSegment.text, lesson?.language);
+      const inputWords = tokenize(draftInput, lesson?.language);
 
       const errors = result.wrongPositions.map(pos => ({
         id: crypto.randomUUID(),
@@ -298,12 +298,11 @@ export default function PracticePage() {
   const handleHint = () => {
     if (!currentSegment || isViewingCompleted) return;
 
-    const expectedWords = currentSegment.text.trim().split(/\s+/);
-    const inputWords = draftInput.trim() === '' ? [] : draftInput.trim().split(/\s+/);
+    const expectedWords = tokenize(currentSegment.text, lesson?.language);
+    const inputWords = draftInput.trim() === '' ? [] : tokenize(draftInput, lesson?.language);
 
     let mismatchIndex = inputWords.length;
     for (let i = 0; i < inputWords.length; i++) {
-      const normalize = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, '');
       if (normalize(inputWords[i]) !== normalize(expectedWords[i] || '')) {
         mismatchIndex = i;
         break;
@@ -313,7 +312,9 @@ export default function PracticePage() {
     if (mismatchIndex < expectedWords.length) {
       const correctWord = expectedWords[mismatchIndex];
       const newWords = [...inputWords.slice(0, mismatchIndex), correctWord];
-      updateDraft(newWords.join(' ') + ' ');
+      const isCJK = lesson?.language === 'ja' || lesson?.language === 'zh';
+      const separator = isCJK ? '' : ' ';
+      updateDraft(newWords.join(separator) + separator);
 
       setTimeout(() => {
         const textarea = document.querySelector('.typing-area-input') as HTMLTextAreaElement;
@@ -328,12 +329,11 @@ export default function PracticePage() {
   const handleHintLetter = () => {
     if (!currentSegment || isViewingCompleted) return;
 
-    const expectedWords = currentSegment.text.trim().split(/\s+/);
-    const inputWords = draftInput.trim() === '' ? [] : draftInput.trim().split(/\s+/);
+    const expectedWords = tokenize(currentSegment.text, lesson?.language);
+    const inputWords = draftInput.trim() === '' ? [] : tokenize(draftInput, lesson?.language);
 
     let mismatchIndex = inputWords.length;
     for (let i = 0; i < inputWords.length; i++) {
-      const normalize = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, '');
       if (normalize(inputWords[i]) !== normalize(expectedWords[i] || '')) {
         mismatchIndex = i;
         break;
@@ -356,10 +356,12 @@ export default function PracticePage() {
       const newPartialWord = correctWord.substring(0, prefixMatchLength + 1);
       const newWords = [...inputWords.slice(0, mismatchIndex), newPartialWord];
 
-      const normalize = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, '');
       const isFullWord = normalize(newPartialWord) === normalize(correctWord);
+      
+      const isCJK = lesson?.language === 'ja' || lesson?.language === 'zh';
+      const separator = isCJK ? '' : ' ';
 
-      updateDraft(newWords.join(' ') + (isFullWord ? ' ' : ''));
+      updateDraft(newWords.join(separator) + (isFullWord ? separator : ''));
 
       setTimeout(() => {
         const textarea = document.querySelector('.typing-area-input') as HTMLTextAreaElement;
@@ -622,6 +624,7 @@ export default function PracticePage() {
                 result={checkResult}
                 input={draftInput}
                 expectedText={currentSegment?.text || ''}
+                lessonLanguage={lesson?.language}
               />
             </>
           )}

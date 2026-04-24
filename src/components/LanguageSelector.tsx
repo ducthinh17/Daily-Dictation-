@@ -24,6 +24,13 @@ export function LanguageSelector({ value, onChange }: LanguageSelectorProps) {
       >
         🇨🇳 Chinese
       </button>
+      <button
+        className={`lang-pill ${value === 'ja' ? 'active' : ''}`}
+        onClick={() => onChange('ja')}
+        type="button"
+      >
+        🇯🇵 Japanese
+      </button>
     </div>
   );
 }

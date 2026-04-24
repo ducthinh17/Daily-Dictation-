@@ -148,6 +148,12 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
               >
                 🇨🇳 Chinese
               </button>
+              <button
+                className={`lang-option ${language === 'ja' ? 'active' : ''}`}
+                onClick={() => setLanguageLocal('ja')}
+              >
+                🇯🇵 Japanese
+              </button>
             </div>
           </div>
         </div>

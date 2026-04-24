@@ -3,16 +3,35 @@ import type { CheckResult } from '../types';
 export function normalize(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^\w\s']/g, '') // remove punctuation except apostrophe
+    .replace(/[^\p{L}\p{N}\s']/gu, '') // Keep letters, numbers, spaces, and apostrophes from ANY language
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-export function checkAnswer(input: string, expected: string): CheckResult {
-  const inputNorm = normalize(input);
-  const expectedNorm = normalize(expected);
+export function tokenize(text: string, language: string = 'en'): string[] {
+  const norm = normalize(text);
+  if (!norm) return [];
+
+  if (language === 'zh' || language === 'ja' || language === 'zh-CN' || language === 'ja-JP') {
+    try {
+      const segmenter = new Intl.Segmenter(language, { granularity: 'word' });
+      return Array.from(segmenter.segment(norm))
+        .filter(s => s.isWordLike)
+        .map(s => s.segment);
+    } catch (e) {
+      console.warn('Intl.Segmenter not supported or failed, falling back to char split', e);
+      return norm.split('');
+    }
+  }
+
+  return norm.split(' ');
+}
+
+export function checkAnswer(input: string, expected: string, language: string = 'en'): CheckResult {
+  const inputWords = tokenize(input, language);
+  const expectedWords = tokenize(expected, language);
   
-  if (!inputNorm && !expectedNorm) {
+  if (inputWords.length === 0 && expectedWords.length === 0) {
     return {
       correct: true,
       totalWords: 0,
@@ -23,8 +42,6 @@ export function checkAnswer(input: string, expected: string): CheckResult {
     };
   }
 
-  const inputWords = inputNorm ? inputNorm.split(' ') : [];
-  const expectedWords = expectedNorm ? expectedNorm.split(' ') : [];
   
   let wrongCount = 0;
   const wrongPositions: number[] = [];

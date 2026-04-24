@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Languages, Loader2 } from 'lucide-react';
 import { translationService } from '../utils/translationService';
+import type { SupportedLanguage } from '../types';
 import './TranslationPanel.css';
 
 interface TranslationPanelProps {
   sentencePrefix: string;
+  sourceLang?: SupportedLanguage;
   defaultTargetLang?: 'vi' | 'en';
 }
 
-export function TranslationPanel({ sentencePrefix, defaultTargetLang = 'vi' }: TranslationPanelProps) {
+export function TranslationPanel({ sentencePrefix, sourceLang = 'en', defaultTargetLang = 'vi' }: TranslationPanelProps) {
   const [targetLang, setTargetLang] = useState<'vi' | 'en'>(defaultTargetLang);
   const [translatedText, setTranslatedText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -21,11 +23,10 @@ export function TranslationPanel({ sentencePrefix, defaultTargetLang = 'vi' }: T
 
     const timer = setTimeout(async () => {
       setLoading(true);
-      // Assuming source is English if target is Vietnamese, and vice-versa.
-      // This could be made dynamic if we pass the source language from the lesson.
-      const sourceLang = targetLang === 'vi' ? 'en' : 'vi'; 
+      // Use provided sourceLang, fallback to inferring if not set correctly
+      const fetchSource = sourceLang !== (targetLang as string) ? sourceLang : (targetLang === 'vi' ? 'en' : 'vi'); 
       
-      const result = await translationService.translate(sentencePrefix, sourceLang, targetLang);
+      const result = await translationService.translate(sentencePrefix, fetchSource, targetLang);
       
       if (result) {
         setTranslatedText(result);

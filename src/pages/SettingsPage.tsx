@@ -144,6 +144,12 @@ export function SettingsPage() {
                 >
                   🇨🇳 Chinese
                 </button>
+                <button
+                  className={`lang-option ${language === 'ja' ? 'active' : ''}`}
+                  onClick={() => { setLanguageLocal('ja'); setIsSaved(false); }}
+                >
+                  🇯🇵 Japanese
+                </button>
               </div>
             </div>
             
